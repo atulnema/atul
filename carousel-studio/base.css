@@ -1,0 +1,172 @@
+/* Carousel Studio — base design system.
+   Rebrand the whole thing by changing these 6 variables. */
+:root {
+  --accent: #2d6cff;       /* the one accent color */
+  --accent-soft: rgba(45, 108, 255, 0.16);
+  --bg-0: #eef1f7;         /* radial-lit background base */
+  --ink: #12141c;          /* deep dark plate (headlines) */
+  --tile: #ffffff;         /* floating white tile cards */
+  --radius: 28px;          /* corner radius used everywhere */
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 1080px;
+  height: 1350px;
+  overflow: hidden;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-0);
+  -webkit-font-smoothing: antialiased;
+}
+
+.frame {
+  position: relative;
+  width: 1080px;
+  height: 1350px;
+  background:
+    radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 42%),
+    radial-gradient(circle at 80% 85%, var(--accent-soft) 0%, rgba(255, 255, 255, 0) 55%),
+    var(--bg-0);
+  overflow: hidden;
+}
+
+/* ---- Floating white tile card (content surface) ---- */
+.tile {
+  background: var(--tile);
+  border-radius: var(--radius);
+  box-shadow:
+    0 1px 2px rgba(20, 24, 40, 0.04),
+    0 24px 48px -12px rgba(20, 24, 40, 0.18),
+    0 0 0 1px rgba(20, 24, 40, 0.04);
+}
+
+/* ---- Deep dark plate (for headlines / cover) ---- */
+.plate {
+  background: linear-gradient(165deg, var(--ink) 0%, #1c1f2b 100%);
+  border-radius: var(--radius);
+  box-shadow:
+    0 24px 60px -16px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  color: #ffffff;
+}
+
+.plate .eyebrow {
+  color: var(--accent);
+}
+
+/* ---- Typography ---- */
+.eyebrow {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.headline {
+  font-size: 76px;
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.plate .headline {
+  color: #ffffff;
+}
+
+.subhead {
+  font-size: 34px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  color: #555b6e;
+}
+
+.plate .subhead {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.kicker-num {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+
+/* ---- Icon tile (square badge, single accent color) ---- */
+.icon-tile {
+  width: 132px;
+  height: 132px;
+  border-radius: 24px;
+  background: var(--accent-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icon-tile svg {
+  width: 72px;
+  height: 72px;
+  fill: var(--accent);
+}
+
+.icon-tile.on-dark {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ---- Ringed icon (for cover slide) ---- */
+.ring-icon {
+  position: absolute;
+  width: 96px;
+  height: 96px;
+  border-radius: 20px;
+  background: var(--tile);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 16px 32px -8px rgba(20, 24, 40, 0.25);
+}
+
+.ring-icon svg {
+  width: 52px;
+  height: 52px;
+  fill: var(--accent);
+}
+
+/* ---- Avatar ---- */
+.avatar {
+  position: absolute;
+  height: 760px;
+  filter: drop-shadow(0 30px 40px rgba(20, 24, 40, 0.25));
+}
+
+/* ---- Big stat ---- */
+.big-stat {
+  font-size: 220px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--accent);
+  line-height: 1;
+}
+
+/* ---- CTA pill ---- */
+.cta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--accent);
+  color: #ffffff;
+  border-radius: 100px;
+  padding: 22px 44px;
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
