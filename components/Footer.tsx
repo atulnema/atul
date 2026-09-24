@@ -35,7 +35,7 @@ export default function Footer() {
           <ul className="space-y-2">
             {site.socials.map((s) => (
               <li key={s.label}>
-                <a href={s.href} className="transition-colors hover:text-acid">
+                <a href={s.href} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-acid">
                   {s.label}
                 </a>
               </li>

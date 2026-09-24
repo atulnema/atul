@@ -35,7 +35,7 @@ All animations respect the OS **reduce motion** setting via `MotionConfig`.
 
 All copy lives in `lib/site.ts`: nav, services, process, stats, case studies, testimonials, email and socials.
 
-> **Before launch:** the stats, case studies and testimonials are placeholders. Swap them for real client results, and update the email address and social links.
+> **Before launch:** the stats, case studies and testimonials are placeholders. Swap them for real client results.
 
 The contact form has no backend. It opens the visitor's email client with the enquiry filled in. To collect submissions directly, point `onSubmit` in `components/Contact.tsx` at a form service or an API route.
 

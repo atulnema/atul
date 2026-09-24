@@ -1,14 +1,12 @@
 // Single source of truth for copy and contact details.
-// Replace the placeholder metrics, testimonials and email with real ones before launch.
+// Replace the placeholder metrics, case studies and testimonials with real ones before launch.
 
 export const site = {
   name: "Alphastrix Digital",
-  email: "hello@alphastrixdigital.com",
+  email: "atulnema10389@gmail.com",
   location: "India · Working worldwide",
   socials: [
-    { label: "Instagram", href: "#" },
-    { label: "LinkedIn", href: "#" },
-    { label: "X", href: "#" },
+    { label: "Instagram", href: "https://www.instagram.com/alphastrix_/" },
   ],
 };
 
