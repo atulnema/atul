@@ -11,7 +11,7 @@ const puppeteer = require("puppeteer");
 const ROOT = __dirname;
 const SLIDES_DIR = path.join(ROOT, "slides");
 const OUTPUT_DIR = path.join(ROOT, "output");
-const CONCURRENCY = 2;
+const CONCURRENCY = 1;
 const MAX_RETRIES = 2;
 
 const args = process.argv.slice(2);
