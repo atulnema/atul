@@ -26,7 +26,15 @@ export default function Preloader() {
   }, [count]);
 
   return (
-    <AnimatePresence onExitComplete={() => (document.documentElement.style.overflow = "")}>
+    <AnimatePresence
+      onExitComplete={() => {
+        document.documentElement.style.overflow = "";
+        // The browser's jump to a #hash happens while scroll is locked and before
+        // pinned sections measure themselves, so redo it once the intro is gone.
+        const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+        target?.scrollIntoView({ behavior: "instant" });
+      }}
+    >
       {!done && (
         <motion.div
           key="preloader"
