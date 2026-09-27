@@ -11,6 +11,7 @@ import Work from "@/components/Work";
 import Testimonials from "@/components/Testimonials";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
+import LiveAgent from "@/components/LiveAgent";
 
 export default function Home() {
   return (
@@ -29,6 +30,7 @@ export default function Home() {
         <Contact />
       </main>
       <Footer />
+      <LiveAgent />
     </Providers>
   );
 }
