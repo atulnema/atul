@@ -1,6 +1,8 @@
 import React from "react";
+import { Audio } from "@remotion/media";
 import {
   AbsoluteFill,
+  staticFile,
   Easing,
   Sequence,
   interpolate,
@@ -372,8 +374,12 @@ const Cta: React.FC = () => {
   );
 };
 
-export const GscReel: React.FC = () => (
+export type ReelProps = { hasVoice: boolean; hasMusic: boolean };
+
+export const GscReel: React.FC<ReelProps> = ({ hasVoice, hasMusic }) => (
   <AbsoluteFill style={{ background: BG }}>
+    {hasMusic ? <Audio src={staticFile("music.mp3")} volume={0.22} /> : null}
+    {hasVoice ? <Audio src={staticFile("voiceover.mp3")} volume={1} /> : null}
     <Background />
     <Sequence from={0} durationInFrames={120}>
       <Hook />
