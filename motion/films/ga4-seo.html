@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GA4 for SEO</title>
+<!--
+  "How to use Google Analytics 4 for SEO": a 45-second vertical film (1080x1920).
+  Built on the motion engine's drawing core. Scene timing comes from ga4-seo.timing.js,
+  which the voiceover script writes, so every visual beat lands on the spoken word.
+
+  Same contract as motion.html: window.seek(seconds), ?render, ?t=, window.motionInfo.
+  Export: npm run motion -- --page motion/films/ga4-seo.html --size 1080x1920 --audio motion/films/ga4-seo.vo.wav
+-->
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; height: 100%; background: #050507; color: #F2EFE9; font: 14px/1.4 Inter, system-ui, sans-serif; }
+  body { display: flex; flex-direction: column; }
+  #stage { flex: 1; display: grid; place-items: center; padding: 16px; min-height: 0; }
+  canvas { display: block; border-radius: 10px; box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+  #ui { display: flex; gap: 10px; align-items: center; padding: 12px 16px; border-top: 1px solid #1C1C26; background: #0B0B10; }
+  #ui button { background: #121219; color: inherit; border: 1px solid #2A2A36; border-radius: 8px; padding: 7px 10px; font: inherit; cursor: pointer; }
+  #scrub { flex: 1; accent-color: #C8FF4D; }
+  #time { font-variant-numeric: tabular-nums; color: #9A98A6; min-width: 110px; }
+  body.render { background: transparent; }
+  body.render #ui { display: none; }
+  body.render #stage { padding: 0; place-items: start; }
+  body.render canvas { border-radius: 0; box-shadow: none; }
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="c"></canvas></div>
+<div id="ui">
+  <button id="play">Pause</button>
+  <input id="scrub" type="range" min="0" max="45" step="0.001" value="0" aria-label="Timeline" />
+  <span id="time">0.00s</span>
+</div>
+<audio id="vo" src="ga4-seo.vo.wav" preload="auto"></audio>
+<script src="ga4-seo.timing.js"></script>
+<script>
+"use strict";
+const DUR = 8, MOVE = 2.2, RET = 6.6;
+const THEMES = {
+  alphastrix: { ground: "#07070A", surface: "#121219", surface2: "#1C1C26", ink: "#F2EFE9",
+    muted: "#9A98A6", a1: "#C8FF4D", a2: "#7C5CFF", border: "rgba(242,239,233,0.10)" },
+};
+const FONT = '"Inter Tight", Inter, "SF Pro Display", "Segoe UI", "Helvetica Neue", Arial, sans-serif';
+const Q = new URLSearchParams(location.search);
+const RENDER = Q.has("render");
+
+/* ── Drawing core, shared with motion.html ── */
+/* ───────────────────────── Math ───────────────────────── */
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const smooth = x => x * x * (3 - 2 * x);
+const TAU = Math.PI * 2;
+
+function cubicBezier(x1, y1, x2, y2) {
+  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+  const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+  const sx = t => ((ax * t + bx) * t + cx) * t;
+  const sy = t => ((ay * t + by) * t + cy) * t;
+  const dx = t => (3 * ax * t + 2 * bx) * t + cx;
+  return x => {
+    if (x <= 0) return 0;
+    if (x >= 1) return 1;
+    let t = x;
+    for (let i = 0; i < 8; i++) {
+      const e = sx(t) - x, d = dx(t);
+      if (Math.abs(e) < 1e-6 || Math.abs(d) < 1e-6) break;
+      t -= e / d;
+    }
+    if (Math.abs(sx(t) - x) > 1e-4) {           // Newton stalled: bisect
+      let lo = 0, hi = 1; t = x;
+      for (let i = 0; i < 30; i++) { (sx(t) < x ? (lo = t) : (hi = t)); t = (lo + hi) / 2; }
+    }
+    return sy(t);
+  };
+}
+// The house curve: fast out of the gate, long soft landing. No overshoot.
+const ease = cubicBezier(0.16, 1, 0.3, 1);
+
+// 0 → 1 during the move, 1 through the hold, 1 → 0 during the return.
+function amt(t, dIn = 0, dOut = 0, inDur = MOVE - dIn, outDur = DUR - RET - dOut) {
+  const a = ease(clamp((t - dIn) / inDur));
+  const b = ease(clamp((t - RET - dOut) / outDur));
+  return a * (1 - b);
+}
+// Hold envelope: fades micro-motion in and out so nothing pops at 2.2s or 6.6s.
+function env(t, fade = 0.6) { return smooth(clamp((t - MOVE) / fade)) * smooth(clamp((RET - t) / fade)); }
+// Damped spring, only used where an effect explicitly asks for overshoot (07).
+function spring(x, w = 9, z = 0.55) {
+  if (x <= 0) return 0;
+  const wd = w * Math.sqrt(1 - z * z);
+  return 1 - Math.exp(-z * w * x) * (Math.cos(wd * x) + (z * w / wd) * Math.sin(wd * x));
+}
+function rng(seed) {                            // mulberry32: same seed, same frame
+  return () => {
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ───────────────────────── Colour ───────────────────────── */
+function rgb(hex) { const n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+function rgba(hex, a) { const [r, g, b] = rgb(hex); return `rgba(${r},${g},${b},${a})`; }
+function mix(h1, h2, k, a = 1) {
+  const A = rgb(h1), B = rgb(h2);
+  return `rgba(${Math.round(lerp(A[0], B[0], k))},${Math.round(lerp(A[1], B[1], k))},${Math.round(lerp(A[2], B[2], k))},${a})`;
+}
+
+/* ───────────────────────── Canvas state ───────────────────────── */
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+let W = 1080, H = 1080, U = 1, CX = 540, CY = 540, T = THEMES.alphastrix;
+let grainPattern = null;
+
+function setup(size, brand) {
+  const m = /^(\d{3,4})x(\d{3,4})$/.exec(size || "") || [0, 1080, 1080];
+  W = +m[1]; H = +m[2]; U = Math.min(W, H) / 1080; CX = W / 2; CY = H / 2;
+  T = THEMES[brand] || THEMES.alphastrix;
+  canvas.width = W; canvas.height = H;
+  // Static film grain, generated once from a fixed seed.
+  const g = document.createElement("canvas"); g.width = g.height = 192;
+  const gx = g.getContext("2d"), img = gx.createImageData(192, 192), r = rng(7);
+  for (let i = 0; i < img.data.length; i += 4) { const v = r() * 255; img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255; }
+  gx.putImageData(img, 0, 0);
+  grainPattern = ctx.createPattern(g, "repeat");
+  fitCanvas();
+}
+
+/* ───────────────────────── Drawing helpers ───────────────────────── */
+const font = (size, weight = 600) => `${weight} ${size}px ${FONT}`;
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, Math.max(0, Math.min(r, w / 2, h / 2))); }
+function txt(s, x, y, o = {}) {
+  const { size = 32, weight = 600, color = T.ink, align = "left", base = "alphabetic", track = 0, alpha = 1 } = o;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.font = font(size, weight); ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = base;
+  ctx.letterSpacing = `${track}px`;
+  ctx.fillText(s, x, y);
+  ctx.restore();
+}
+function measure(s, size, weight = 600, track = 0) {
+  ctx.save(); ctx.font = font(size, weight); ctx.letterSpacing = `${track}px`;
+  const m = ctx.measureText(s); ctx.restore(); return m;
+}
+function fitSize(s, maxW, size, weight = 600, trackEm = 0) {
+  const w = measure(s, size, weight, size * trackEm).width;
+  return w > maxW ? size * maxW / w : size;
+}
+function wrap(s, maxW, size, weight = 400) {
+  ctx.save(); ctx.font = font(size, weight);
+  const lines = []; let line = "";
+  for (const word of s.split(" ")) {
+    const test = line ? line + " " + word : word;
+    if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = word; } else line = test;
+  }
+  if (line) lines.push(line);
+  ctx.restore(); return lines;
+}
+function glass(x, y, w, h, r, o = {}) {
+  const { alpha = 1, glow = 0, fill = T.surface, shadow = 1 } = o;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.shadowColor = `rgba(0,0,0,${0.5 * shadow})`; ctx.shadowBlur = 50 * U; ctx.shadowOffsetY = 22 * U;
+  rr(x, y, w, h, r); ctx.fillStyle = rgba(fill, 0.94); ctx.fill();
+  ctx.shadowColor = "transparent";
+  const sheen = ctx.createLinearGradient(x, y, x, y + h);
+  sheen.addColorStop(0, "rgba(255,255,255,0.055)"); sheen.addColorStop(0.45, "rgba(255,255,255,0)");
+  ctx.fillStyle = sheen; ctx.fill();
+  ctx.lineWidth = Math.max(1, U); ctx.strokeStyle = T.border; ctx.stroke();
+  if (glow > 0) {
+    ctx.strokeStyle = rgba(T.a1, 0.75 * glow); ctx.shadowColor = rgba(T.a1, 0.55 * glow); ctx.shadowBlur = 26 * U;
+    ctx.lineWidth = 1.5 * U; ctx.stroke(); ctx.shadowColor = "transparent";
+  }
+  // 1px specular rim along the top edge
+  const rim = ctx.createLinearGradient(x, 0, x + w, 0);
+  rim.addColorStop(0, "rgba(255,255,255,0)"); rim.addColorStop(0.5, "rgba(255,255,255,0.32)"); rim.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.beginPath(); ctx.moveTo(x + r, y + 0.5); ctx.lineTo(x + w - r, y + 0.5);
+  ctx.strokeStyle = rim; ctx.lineWidth = Math.max(1, U); ctx.stroke();
+  ctx.restore();
+}
+function pill(label, x, y, o = {}) {
+  const { size = 20 * U, fill = T.surface2, color = T.ink, border = T.border, alpha = 1, align = "left", weight = 600 } = o;
+  const padX = size * 0.75, h = size * 1.9, w = measure(label, size, weight).width + padX * 2;
+  const left = align === "right" ? x - w : align === "center" ? x - w / 2 : x;
+  ctx.save(); ctx.globalAlpha *= alpha;
+  rr(left, y, w, h, h / 2); ctx.fillStyle = fill; ctx.fill();
+  if (border) { ctx.strokeStyle = border; ctx.lineWidth = Math.max(1, U); ctx.stroke(); }
+  txt(label, left + padX, y + h / 2, { size, weight, color, base: "middle" });
+  ctx.restore();
+  return { w, h, left };
+}
+function background() {
+  ctx.fillStyle = T.ground; ctx.fillRect(0, 0, W, H);
+  let g = ctx.createRadialGradient(W * 0.2, H * 0.1, 0, W * 0.2, H * 0.1, Math.max(W, H) * 0.7);
+  g.addColorStop(0, rgba(T.a2, 0.10)); g.addColorStop(1, rgba(T.a2, 0));
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  g = ctx.createRadialGradient(W * 0.9, H * 0.95, 0, W * 0.9, H * 0.95, Math.max(W, H) * 0.6);
+  g.addColorStop(0, rgba(T.a1, 0.05)); g.addColorStop(1, rgba(T.a1, 0));
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  // Faint grid with a soft radial falloff
+  ctx.save();
+  ctx.strokeStyle = rgba(T.ink, 0.035); ctx.lineWidth = 1;
+  const step = 72 * U;
+  ctx.beginPath();
+  for (let x = (W % step) / 2; x < W; x += step) { ctx.moveTo(Math.round(x) + 0.5, 0); ctx.lineTo(Math.round(x) + 0.5, H); }
+  for (let y = (H % step) / 2; y < H; y += step) { ctx.moveTo(0, Math.round(y) + 0.5); ctx.lineTo(W, Math.round(y) + 0.5); }
+  ctx.stroke();
+  const v = ctx.createRadialGradient(CX, CY, Math.min(W, H) * 0.25, CX, CY, Math.max(W, H) * 0.75);
+  v.addColorStop(0, rgba(T.ground, 0)); v.addColorStop(1, rgba(T.ground, 0.92));
+  ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
+function grain() {
+  ctx.save(); ctx.globalAlpha = 0.045; ctx.globalCompositeOperation = "overlay";
+  ctx.fillStyle = grainPattern; ctx.fillRect(0, 0, W, H); ctx.restore();
+}
+function illustrativeTag() {
+  pill("Illustrative Data", W - 36 * U, 36 * U, { size: 17 * U, align: "right", color: T.muted, fill: rgba(T.ground, 0.6), weight: 500 });
+}
+// Polyline helpers for partial strokes and travelling pulses
+function lengths(pts) { const L = [0]; for (let i = 1; i < pts.length; i++) L.push(L[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])); return L; }
+function pointAt(pts, L, d) {
+  d = clamp(d, 0, L[L.length - 1]);
+  let i = 1; while (i < L.length - 1 && L[i] < d) i++;
+  const k = (d - L[i - 1]) / ((L[i] - L[i - 1]) || 1);
+  return [lerp(pts[i - 1][0], pts[i][0], k), lerp(pts[i - 1][1], pts[i][1], k)];
+}
+function strokePartial(pts, L, upTo) {
+  ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) {
+    if (L[i] >= upTo) { const p = pointAt(pts, L, upTo); ctx.lineTo(p[0], p[1]); break; }
+    ctx.lineTo(pts[i][0], pts[i][1]);
+  }
+  ctx.stroke();
+}
+// Monotone cubic interpolation: a smooth curve that never overshoots a data point.
+function monotone(xs, ys, per = 28) {
+  const n = xs.length, d = [], m = new Array(n);
+  for (let i = 0; i < n - 1; i++) d[i] = (ys[i + 1] - ys[i]) / (xs[i + 1] - xs[i]);
+  m[0] = d[0]; m[n - 1] = d[n - 2];
+  for (let i = 1; i < n - 1; i++) m[i] = d[i - 1] * d[i] <= 0 ? 0 : (d[i - 1] + d[i]) / 2;
+  for (let i = 0; i < n - 1; i++) {
+    if (d[i] === 0) { m[i] = m[i + 1] = 0; continue; }
+    const a = m[i] / d[i], b = m[i + 1] / d[i], s = a * a + b * b;
+    if (s > 9) { const k = 3 / Math.sqrt(s); m[i] = k * a * d[i]; m[i + 1] = k * b * d[i]; }
+  }
+  const pts = [];
+  for (let i = 0; i < n - 1; i++) {
+    const h = xs[i + 1] - xs[i];
+    for (let k = 0; k < per; k++) {
+      const s = k / per, s2 = s * s, s3 = s2 * s;
+      pts.push([xs[i] + s * h, (2 * s3 - 3 * s2 + 1) * ys[i] + (s3 - 2 * s2 + s) * h * m[i] + (-2 * s3 + 3 * s2) * ys[i + 1] + (s3 - s2) * h * m[i + 1]]);
+    }
+  }
+  pts.push([xs[n - 1], ys[n - 1]]);
+  return pts;
+}
+function glowDot(x, y, r, color, a = 1) {
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, rgba("#FFFFFF", a)); g.addColorStop(0.25, rgba(color, 0.9 * a)); g.addColorStop(1, rgba(color, 0));
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+}
+const fmt = v => (typeof v === "number" ? v.toLocaleString("en-US") : String(v));
+
+// Brand mark (same paths as app/icon.svg). Glyph spans 5→27 in a 32-unit box.
+const LOGO_A = new Path2D("M16 5 27 27H21L16 17 11 27H5L16 5Z");
+const LOGO_B = new Path2D("M16 5 27 27H21L16 17Z");
+function drawLogo(c, x, y, size, alpha = 1) {
+  const s = size / 22;
+  c.save(); c.globalAlpha *= alpha; c.translate(x - 16 * s, y - 16 * s); c.scale(s, s);
+  c.fillStyle = T.a1; c.fill(LOGO_A);
+  c.globalAlpha *= 0.85; c.fillStyle = T.a2; c.fill(LOGO_B);
+  c.restore();
+}
+function logoClip(x, y, size) {
+  const s = size / 22, p = new Path2D(), m = new DOMMatrix().translate(x - 16 * s, y - 16 * s).scale(s);
+  p.addPath(LOGO_A, m); return p;
+}
+
+
+
+/* ═════════════════════════ FILM ═════════════════════════ */
+// Fallback timing so the page still previews before the voiceover exists.
+const TIMING = window.FILM_TIMING || (() => {
+  const lens = { hook: 6, gsc: 11, organic: 5, landing: 5, engage: 6, keyevents: 6.5, cta: 5.5 };
+  let t = 0; const scenes = [];
+  for (const [id, d] of Object.entries(lens)) { scenes.push({ id, start: t, end: t + d, lines: [] }); t += d; }
+  return { total: t, scenes };
+})();
+const FILM = TIMING.total;
+
+const X0 = 72;                       // side margin (px at 1080 wide)
+const KEYWORDS = ["Google Analytics 4", "Search Console", "Product links", "Admin", "Traffic acquisition", "Organic Search",
+  "Landing page", "engagement rate", "key events", "form submissions", "Alphastrix Digital", "SEO", "leads", "rewrite"];
+
+// When is a phrase spoken? Sentence timings are exact; position inside a sentence is estimated by characters.
+function cue(s, phrase, fallback = 0) {
+  for (const l of s.lines) {
+    const i = l.text.indexOf(phrase);
+    if (i >= 0) return l.start + (l.end - l.start) * (i / l.text.length) - s.start;
+  }
+  return fallback;
+}
+const rise = (lt, at, dur = 0.6) => ease(clamp((lt - at) / dur));
+
+function check(x, y, s, color) {
+  ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 3.2 * s / 20; ctx.lineCap = ctx.lineJoin = "round";
+  ctx.beginPath(); ctx.moveTo(x - s * 0.45, y); ctx.lineTo(x - s * 0.12, y + s * 0.32); ctx.lineTo(x + s * 0.5, y - s * 0.35); ctx.stroke(); ctx.restore();
+}
+function chip(label, x, y, o = {}) { return pill(label, x, y, { size: 24, ...o }); }
+function crumbs(parts, y, lt, at) {
+  const a = rise(lt, at, 0.5);
+  if (a <= 0) return;
+  const s = 22, gap = 14, sepW = measure("›", s, 500).width;
+  const ws = parts.map(p => measure(p, s, 500).width + s * 1.5);
+  const total = ws.reduce((a, b) => a + b, 0) + (parts.length - 1) * (sepW + gap * 2);
+  let x = CX - total / 2;
+  ctx.save(); ctx.globalAlpha *= a; ctx.translate(0, (1 - a) * 16);
+  parts.forEach((p, i) => {
+    pill(p, x, y, { size: s, weight: 500, color: T.muted, fill: rgba(T.ink, 0.04) });
+    x += ws[i];
+    if (i < parts.length - 1) { txt("›", x + gap, y + s * 0.95, { size: s, color: T.muted, base: "middle", weight: 500 }); x += sepW + gap * 2; }
+  });
+  ctx.restore();
+}
+function header(step, title, lt) {
+  const a = rise(lt, 0.05, 0.6), b = rise(lt, 0.18, 0.7);
+  txt(`STEP 0${step}`, X0, 380 + (1 - a) * 20, { size: 26, color: T.a1, weight: 700, track: 4, alpha: a });
+  txt("/ 05", X0 + measure(`STEP 0${step}`, 26, 700, 4).width + 14, 380 + (1 - a) * 20, { size: 26, color: T.muted, weight: 500, track: 4, alpha: a });
+  const size = fitSize(title, W - X0 * 2, 84, 700, -0.03);
+  ctx.save(); ctx.beginPath(); ctx.rect(0, 400, W, 120); ctx.clip();
+  txt(title, X0, 488 + (1 - b) * 90, { size, weight: 700, track: -0.03 * size });
+  ctx.restore();
+}
+function topBar(t) {
+  drawLogo(ctx, X0 + 20, 150, 40);
+  txt("Alphastrix Digital", X0 + 54, 150, { size: 26, weight: 600, base: "middle", track: -0.3 });
+  // Step progress: five segments that fill as the steps go by
+  const ids = ["gsc", "organic", "landing", "engage", "keyevents"], segW = 52, gap = 8;
+  ids.forEach((id, i) => {
+    const s = TIMING.scenes.find(x => x.id === id);
+    const k = s ? clamp((t - s.start) / (s.end - s.start)) : 0;
+    const x = W - X0 - (ids.length - i) * (segW + gap) + gap;
+    rr(x, 147, segW, 6, 3); ctx.fillStyle = rgba(T.ink, 0.12); ctx.fill();
+    if (k > 0) { rr(x, 147, segW * k, 6, 3); ctx.fillStyle = T.a1; ctx.fill(); }
+  });
+}
+function illustrative(a = 1) {
+  if (a <= 0.01) return;
+  pill("Illustrative data", W - X0, 300, { size: 18, align: "right", color: T.muted, fill: rgba(T.ground, 0.7), weight: 500, alpha: a });
+}
+function tableCard(x, y, w, cols, rows, lt, at, o = {}) {
+  // cols: [{label, x (fraction), align}] ; rows: arrays of strings
+  const rowH = o.rowH || 96, headH = 70, h = headH + rows.length * rowH + 16;
+  const a = rise(lt, at, 0.7);
+  if (a <= 0) return { h, rowY: () => 0 };
+  ctx.save(); ctx.globalAlpha *= a; ctx.translate(0, (1 - a) * 50);
+  glass(x, y, w, h, 28, { shadow: 0.9 });
+  cols.forEach(c => txt(c.label.toUpperCase(), x + w * c.x, y + 44, { size: 18, color: T.muted, weight: 600, track: 2, align: c.align || "left" }));
+  ctx.fillStyle = rgba(T.ink, 0.08); ctx.fillRect(x + 28, y + headH, w - 56, 1);
+  const focus = o.focus ?? -1, f = o.focusAmt || 0;
+  rows.forEach((r, i) => {
+    const ra = rise(lt, at + 0.25 + i * 0.09, 0.55), ry = y + headH + i * rowH + rowH / 2 + 8;
+    ctx.save(); ctx.globalAlpha *= ra;
+    if (f > 0 && i !== focus) { ctx.filter = `blur(${2.2 * f}px)`; ctx.globalAlpha *= 1 - 0.45 * f; }
+    cols.forEach((c, j) => {
+      const isMain = j === 0;
+      const color = c.color ? c.color(r, i) : (isMain ? T.ink : T.ink);
+      txt(r[j], x + w * c.x, ry + (1 - ra) * 14, { size: isMain ? 30 : 30, weight: isMain ? 500 : 600, color, align: c.align || "left", base: "middle" });
+    });
+    ctx.restore();
+    if (i < rows.length - 1) { ctx.fillStyle = rgba(T.ink, 0.05 * ra); ctx.fillRect(x + 28, y + headH + (i + 1) * rowH + 8, w - 56, 1); }
+  });
+  // Glass lens over the row that matters
+  if (focus >= 0 && f > 0) {
+    const ly = lerp(y - 40, y + headH + focus * rowH + 8, f), lh = rowH;
+    ctx.save();
+    ctx.shadowColor = rgba(T.a1, 0.45); ctx.shadowBlur = 26;
+    rr(x + 12, ly, w - 24, lh, 22); ctx.strokeStyle = rgba(T.a1, 0.9 * f); ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.shadowColor = "transparent";
+    ctx.fillStyle = rgba(T.a1, 0.06 * f); ctx.fill();
+    const sh = ctx.createLinearGradient(x, ly, x + w, ly + lh);
+    sh.addColorStop(0, "rgba(255,255,255,0)"); sh.addColorStop(0.5, `rgba(255,255,255,${0.06 * f})`); sh.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = sh; ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+  return { h, rowY: i => y + headH + i * rowH + 8 };
+}
+function node(label, x, y, w, h, glow = 0, a = 1) {
+  ctx.save(); ctx.globalAlpha *= a;
+  glass(x - w / 2, y - h / 2, w, h, h / 2, { glow, shadow: 0.7 });
+  ctx.beginPath(); ctx.arc(x - w / 2 + 30, y, 7, 0, TAU); ctx.fillStyle = mix(T.muted, T.a1, glow); ctx.fill();
+  txt(label, x + 10, y, { size: fitSize(label, w - 80, 28, 600), weight: 600, align: "center", base: "middle" });
+  ctx.restore();
+}
+function ring(nd, at, lt, w, h) {
+  const a = (lt - at) / 0.8;
+  if (a < 0 || a > 1) return;
+  const g = ease(a) * 50;
+  ctx.save(); ctx.strokeStyle = rgba(T.a1, 0.6 * (1 - a)); ctx.lineWidth = 2.5;
+  rr(nd[0] - w / 2 - g, nd[1] - h / 2 - g, w + g * 2, h + g * 2, h / 2 + g); ctx.stroke(); ctx.restore();
+}
+function pulseAlong(pts, L, k, a = 1) {
+  if (k < 0 || k > 1) return;
+  const total = L[L.length - 1], head = total * smooth(k), trail = total * 0.3;
+  ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round";
+  for (let s = 0; s < 8; s++) {
+    const d0 = head - trail * (s + 1) / 8, d1 = head - trail * s / 8;
+    if (d1 <= 0) continue;
+    const p = pointAt(pts, L, Math.max(0, d0)), q = pointAt(pts, L, d1);
+    ctx.strokeStyle = rgba(T.a1, 0.8 * a * (1 - s / 8)); ctx.lineWidth = 6 - s * 0.6;
+    ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); ctx.stroke();
+  }
+  const hp = pointAt(pts, L, head); glowDot(hp[0], hp[1], 22, T.a1, 0.9 * a);
+  ctx.restore();
+}
+const line2 = (a, b, n = 40) => { const pts = []; for (let i = 0; i <= n; i++) pts.push([lerp(a[0], b[0], i / n), lerp(a[1], b[1], i / n)]); return pts; };
+
+/* ── Scenes ── */
+const SCENES = {};
+
+// Hook: masked kinetic type. "Can you prove it?" fills with liquid colour.
+SCENES.hook = {
+  init() { for (const k of ["off"]) { this[k] = document.createElement("canvas"); this[k].width = W; this[k].height = H; } },
+  draw(lt, D, s) {
+    txt("Your SEO is working.", CX, 520, { size: 60, weight: 600, align: "center", color: T.muted, track: -1 });
+    const at = cue(s, "But can you", 1.4) - 0.15;
+    const words = ["Can you", "prove it?"], size = Math.min(fitSize("prove it?", W - X0 * 2, 210, 800, -0.04), 210);
+    const bases = [800, 800 + size * 0.98];
+    const o = this.off, oc = o.getContext("2d"), fills = [];
+    // Each line gets its own artwork and its own mask, so one line's liquid can't bleed into the other.
+    words.forEach((w, i) => {
+      const m = measure(w, size, 800, -0.04 * size), top = bases[i] - m.actualBoundingBoxAscent, bot = bases[i] + m.actualBoundingBoxDescent;
+      const f = ease(clamp((lt - at - i * 0.25) / 1.3)), hz = lerp(bot + 6, top - 10, f), wave = 12 * Math.sin(Math.PI * f);
+      fills.push([f, hz, m.width]);
+      if (f <= 0.001) return;
+      oc.setTransform(1, 0, 0, 1, 0, 0); oc.globalCompositeOperation = "source-over"; oc.clearRect(0, 0, W, H);
+      oc.save(); oc.beginPath(); oc.moveTo(0, bot + 40);
+      for (let x = 0; x <= W; x += 12) oc.lineTo(x, hz + wave * Math.sin(x / 90 + lt * 2));
+      oc.lineTo(W, bot + 40); oc.closePath(); oc.clip();
+      const g = oc.createLinearGradient(0, bot, 0, top); g.addColorStop(0, T.a2); g.addColorStop(1, T.a1);
+      oc.fillStyle = g; oc.fillRect(0, top - 20, W, bot - top + 60);
+      const bx = CX + Math.sin(lt * 0.9 + i) * 260, by = (top + bot) / 2, rg = oc.createRadialGradient(bx, by, 0, bx, by, size);
+      rg.addColorStop(0, "rgba(255,255,255,0.28)"); rg.addColorStop(1, "rgba(255,255,255,0)");
+      oc.fillStyle = rg; oc.fillRect(0, top - 20, W, bot - top + 60);
+      oc.restore();
+      oc.globalCompositeOperation = "destination-in"; oc.font = font(size, 800); oc.letterSpacing = `${-0.04 * size}px`; oc.textAlign = "center"; oc.fillStyle = "#fff";
+      oc.fillText(w, CX, bases[i]);
+      oc.globalCompositeOperation = "source-over";
+      ctx.drawImage(o, 0, 0);
+    });
+    const oa = rise(lt, at - 0.3, 0.4);
+    ctx.save(); ctx.globalAlpha = oa; ctx.font = font(size, 800); ctx.letterSpacing = `${-0.04 * size}px`; ctx.textAlign = "center";
+    ctx.lineWidth = 1.8; ctx.strokeStyle = rgba(T.ink, 0.4); words.forEach((w, i) => ctx.strokeText(w, CX, bases[i])); ctx.restore();
+    fills.forEach(([f, hz, mw]) => {      // accent horizon line while each line is filling
+      if (f <= 0 || f >= 1) return;
+      ctx.save(); ctx.globalAlpha = Math.sin(Math.PI * f) ** 0.6; ctx.strokeStyle = T.a1; ctx.lineWidth = 2; ctx.shadowColor = rgba(T.a1, 0.8); ctx.shadowBlur = 14;
+      ctx.beginPath(); ctx.moveTo(CX - mw / 2 - 30, hz); ctx.lineTo(CX + mw / 2 + 30, hz); ctx.stroke(); ctx.restore();
+    });
+
+    // Topic card slides up through a mask
+    const c = rise(lt, cue(s, "Here's how", 3.4) - 0.1, 0.8), cy = 1190;
+    ctx.save(); ctx.beginPath(); ctx.rect(0, cy - 20, W, 220); ctx.clip(); ctx.globalAlpha = c; ctx.translate(0, (1 - c) * 160);
+    glass(X0 + 60, cy, W - (X0 + 60) * 2, 150, 34, { glow: 0.35 });
+    const bx = X0 + 110, bb = cy + 112;
+    [0.35, 0.6, 0.85].forEach((h, i) => { rr(bx + i * 26, bb - 76 * h, 18, 76 * h, 5); ctx.fillStyle = i === 2 ? T.a1 : rgba(T.a2, 0.9); ctx.fill(); });
+    txt("Google Analytics 4", bx + 104, cy + 66, { size: 42, weight: 700, track: -0.8 });
+    txt("for SEO · in 5 steps", bx + 104, cy + 112, { size: 28, weight: 500, color: T.a1 });
+    ctx.restore();
+  },
+};
+
+// Step 1: breadcrumb path, a link that pulses to life, then the queries table under a glass lens.
+SCENES.gsc = {
+  draw(lt, D, s) {
+    header(1, "Link Search Console", lt);
+    const cAdmin = cue(s, "In Admin", 1.5), cLinks = cue(s, "Product links", 2.2), cConnect = cue(s, "connect your property", 3),
+      cPublish = cue(s, "publish the Search", 4), cNow = cue(s, "Now you can see", 6), cQueries = cue(s, "exact queries", 7);
+    // Breadcrumb with the active step lit
+    const parts = ["Admin", "Product links", "Search Console links"], ats = [cAdmin, cLinks, cConnect - 0.2];
+    const sz = 23, gap = 12, sepW = measure("›", sz, 500).width, ws = parts.map(p => measure(p, sz, 600).width + sz * 1.5);
+    let x = CX - (ws.reduce((a, b) => a + b, 0) + 2 * (sepW + gap * 2)) / 2;
+    parts.forEach((p, i) => {
+      const a = rise(lt, ats[i] - 0.1, 0.5), active = i === 2 ? lt > ats[i] : lt > ats[i] && lt < ats[i + 1];
+      ctx.save(); ctx.globalAlpha *= a; ctx.translate(0, (1 - a) * 14);
+      pill(p, x, 590, { size: sz, weight: 600, color: active ? T.ground : (lt > ats[i] ? T.a1 : T.muted), fill: active ? T.a1 : rgba(T.ink, 0.04), border: active ? null : T.border });
+      ctx.restore();
+      x += ws[i];
+      if (i < 2) { txt("›", x + gap, 590 + sz * 0.95, { size: sz, color: T.muted, base: "middle", alpha: rise(lt, ats[i + 1] - 0.1, 0.5) }); x += sepW + gap * 2; }
+    });
+    // Link diagram
+    const A = [CX - 245, 790], B = [CX + 245, 790], nw = 330, nh = 92, la = rise(lt, cAdmin, 0.6);
+    const pts = line2([A[0] + nw / 2, A[1]], [B[0] - nw / 2, B[1]]), L = lengths(pts);
+    const linked = clamp((lt - cConnect - 0.7) / 0.3);
+    ctx.save(); ctx.globalAlpha *= la;
+    ctx.setLineDash(linked > 0 ? [] : [8, 10]); ctx.strokeStyle = linked > 0 ? rgba(T.a1, 0.7) : rgba(T.ink, 0.25); ctx.lineWidth = 3;
+    if (linked > 0) { ctx.shadowColor = rgba(T.a1, 0.6); ctx.shadowBlur = 12; }
+    strokePartial(pts, L, L[L.length - 1]); ctx.restore();
+    pulseAlong(pts, L, (lt - cConnect) / 0.7);
+    ring(B, cConnect + 0.7, lt, nw, nh);
+    node("Search Console", A[0], A[1], nw, nh, 0.25 * la, la);
+    node("GA4 property", B[0], B[1], nw, nh, Math.max(0.25, linked) * la, la);
+    // Status chips
+    const s1 = rise(lt, cConnect + 0.7, 0.5), s2 = rise(lt, cPublish + 0.4, 0.5);
+    const w1 = measure("Linked", 22, 600).width + 22 * 1.5 + 34, w2 = measure("Reports published", 22, 600).width + 22 * 1.5 + 34;
+    const sx = CX - (w1 + (s2 > 0 ? w2 + 14 : 0)) / 2;
+    [[s1, "Linked", sx], [s2, "Reports published", sx + w1 + 14]].forEach(([a, label, px]) => {
+      if (a <= 0) return;
+      ctx.save(); ctx.globalAlpha *= a; ctx.translate(0, (1 - a) * 12);
+      const p = pill("    " + label, px, 878, { size: 22, color: T.a1, fill: rgba(T.a1, 0.1), border: rgba(T.a1, 0.35) });
+      check(px + 27, 878 + p.h / 2, 18, T.a1); ctx.restore();
+    });
+    // Queries table under a glass lens
+    const rows = [["ga4 seo setup", "412", "3.2"], ["track organic traffic", "286", "5.8"], ["seo reporting tool", "174", "8.1"], ["landing page report", "98", "11.4"]];
+    const focus = ease(clamp((lt - cQueries - 0.2) / 0.8));
+    tableCard(X0, 990, W - X0 * 2, [{ label: "Search query", x: 0.06 }, { label: "Clicks", x: 0.7, align: "right" }, { label: "Position", x: 0.94, align: "right" }],
+      rows, lt, cNow - 0.2, { focus: 1, focusAmt: focus, rowH: 88 });
+    illustrative(rise(lt, cNow, 0.5));
+  },
+};
+
+// Step 2: channel bars grow, then the Organic Search filter isolates one bar.
+SCENES.organic = {
+  draw(lt, D, s) {
+    header(2, "Isolate organic traffic", lt);
+    crumbs(["Reports", "Acquisition", "Traffic acquisition"], 590, lt, cue(s, "Open Traffic", 0.6));
+    const cf = cue(s, "filter to Organic", 2), f = ease(clamp((lt - cf - 0.1) / 0.6));
+    // Filter pill
+    const fa = rise(lt, cf - 0.15, 0.5);
+    if (fa > 0) {
+      ctx.save(); ctx.globalAlpha *= fa; ctx.translate(0, (1 - fa) * 14);
+      const label = "Session default channel group  =", s1 = 23, w1 = measure(label, s1, 500).width, w2 = measure("Organic Search", s1, 700).width;
+      const pw = 60 + w1 + 14 + w2 + 34, px = CX - pw / 2, py = 670, ph = 64;
+      glass(px, py, pw, ph, ph / 2, { glow: f * 0.8, shadow: 0.6 });
+      ctx.beginPath(); ctx.moveTo(px + 24, py + 22); ctx.lineTo(px + 48, py + 22); ctx.lineTo(px + 39, py + 34); ctx.lineTo(px + 39, py + 44); ctx.lineTo(px + 33, py + 41); ctx.lineTo(px + 33, py + 34); ctx.closePath();
+      ctx.fillStyle = T.a1; ctx.fill();
+      txt(label, px + 60, py + ph / 2, { size: s1, color: T.muted, base: "middle", weight: 500 });
+      txt("Organic Search", px + 60 + w1 + 14, py + ph / 2, { size: s1, color: T.a1, base: "middle", weight: 700 });
+      ctx.restore();
+      ring([CX, 702], cf + 0.3, lt, pw, ph);
+    }
+    // Bars
+    const rows = [["Organic Search", 4820], ["Direct", 2140], ["Referral", 960], ["Paid Search", 730], ["Organic Social", 410]];
+    const max = 4820, x = X0, w = W - X0 * 2, top = 800, rowH = 106;
+    rows.forEach(([label, v], i) => {
+      const g = ease(clamp((lt - 0.45 - i * 0.08) / 0.9)), y = top + i * rowH, org = i === 0;
+      const dim = org ? 1 : 1 - 0.72 * f;
+      ctx.save(); ctx.globalAlpha *= g * dim;
+      txt(label, x, y + 24, { size: 28, weight: org ? 700 : 500, color: org && f > 0.5 ? T.a1 : T.ink });
+      txt(v.toLocaleString("en-US"), x + w, y + 24, { size: 28, weight: 700, align: "right", color: org && f > 0.5 ? T.a1 : T.ink });
+      rr(x, y + 44, w, 22, 11); ctx.fillStyle = rgba(T.ink, 0.06); ctx.fill();
+      const bw = w * (v / max) * g;
+      if (bw > 1) {
+        rr(x, y + 44, bw, 22, 11);
+        if (org) { ctx.shadowColor = rgba(T.a1, 0.5 * f); ctx.shadowBlur = 18 * f; ctx.fillStyle = mix(T.a2, T.a1, f); }
+        else ctx.fillStyle = rgba(T.a2, 0.85);
+        ctx.fill();
+      }
+      ctx.restore();
+    });
+    illustrative(rise(lt, 0.4, 0.5));
+  },
+};
+
+// Step 3: landing page table, lens settles on the top organic page.
+SCENES.landing = {
+  draw(lt, D, s) {
+    header(3, "Find your winning pages", lt);
+    crumbs(["Reports", "Engagement", "Landing page"], 590, lt, 0.4);
+    const cw = cue(s, "top search pages", 2), focus = ease(clamp((lt - cw - 0.1) / 0.8));
+    const rows = [["/blog/ga4-seo-guide", "1,920", "68%"], ["/services/seo", "1,140", "21%"], ["/blog/keyword-research", "860", "54%"], ["/pricing", "410", "47%"], ["/about", "190", "39%"]];
+    const card = tableCard(X0, 690, W - X0 * 2, [{ label: "Landing page", x: 0.06 }, { label: "Sessions", x: 0.72, align: "right" }, { label: "Engaged", x: 0.94, align: "right" }],
+      rows, lt, 0.55, { focus: 0, focusAmt: focus, rowH: 100 });
+    // Comparison chip on the card
+    const ca = rise(lt, 0.9, 0.5);
+    if (ca > 0) pill("Organic Search", W - X0 - 24, 690 + 14, { size: 18, align: "right", color: T.a1, fill: rgba(T.a1, 0.1), border: rgba(T.a1, 0.35), alpha: ca });
+    // Tag on the winner
+    const ta = rise(lt, cw + 0.6, 0.5);
+    if (ta > 0) {
+      ctx.save(); ctx.globalAlpha *= ta; ctx.translate(0, (1 - ta) * 10);
+      pill("Top organic page", CX, 690 + card.h + 40, { size: 24, align: "center", color: T.ground, fill: T.a1, border: null, weight: 700 });
+      ctx.restore();
+    }
+    illustrative(rise(lt, 0.4, 0.5));
+  },
+};
+
+// Step 4: two pages, two gauges. One works, one ranks but doesn't engage.
+SCENES.engage = {
+  card(y, path, pct, sub, status, good, lt, at, statusAt) {
+    const a = rise(lt, at, 0.7), k = ease(clamp((lt - at - 0.15) / 1.2));
+    ctx.save(); ctx.globalAlpha *= a; ctx.translate(0, (1 - a) * 40);
+    const x = X0, w = W - X0 * 2, h = 270;
+    glass(x, y, w, h, 30, { glow: !good ? 0.6 * rise(lt, statusAt, 0.5) : 0, shadow: 0.9 });
+    txt(path, x + 40, y + 70, { size: 32, weight: 600 });
+    txt(sub, x + 40, y + 112, { size: 22, color: T.muted, weight: 500 });
+    txt(`${Math.round(pct * k)}%`, x + 40, y + 205, { size: 76, weight: 700, color: good ? T.a1 : T.ink, track: -2 });
+    // Gauge
+    const gx = x + w - 130, gy = y + h / 2, r = 82;
+    ctx.lineWidth = 16; ctx.lineCap = "round";
+    ctx.strokeStyle = rgba(T.ink, 0.08); ctx.beginPath(); ctx.arc(gx, gy, r, 0, TAU); ctx.stroke();
+    ctx.strokeStyle = good ? T.a1 : T.a2; ctx.shadowColor = rgba(good ? T.a1 : T.a2, 0.5); ctx.shadowBlur = 14;
+    ctx.beginPath(); ctx.arc(gx, gy, r, -Math.PI / 2, -Math.PI / 2 + TAU * pct / 100 * k); ctx.stroke(); ctx.shadowColor = "transparent";
+    const sa = rise(lt, statusAt, 0.5);
+    if (sa > 0) pill(status, x + 40 + measure(`${pct}%`, 76, 700, -2).width + 26, y + 160, {
+      size: 22, alpha: sa, weight: 700, color: good ? T.a1 : T.ground, fill: good ? rgba(T.a1, 0.1) : T.a1, border: good ? rgba(T.a1, 0.35) : null });
+    ctx.restore();
+  },
+  draw(lt, D, s) {
+    header(4, "Check engagement rate", lt);
+    const cBad = cue(s, "A page that ranks", 1.8), cRewrite = cue(s, "needs a rewrite", 3.2);
+    this.card(600, "/blog/ga4-seo-guide", 68, "1,920 organic sessions", "Working", true, lt, 0.4, 1.4);
+    this.card(910, "/services/seo", 21, "1,140 organic sessions", "Needs a rewrite", false, lt, cBad - 0.2, cRewrite);
+    const na = rise(lt, 0.9, 0.6);
+    txt("Engaged session: 10s+, a key event, or 2+ page views", CX, 1262, { size: 23, color: T.muted, align: "center", weight: 500, alpha: na });
+    illustrative(rise(lt, 0.4, 0.5));
+  },
+};
+
+// Step 5: toggle form_submit to a key event, then trace organic visits through to a lead.
+SCENES.keyevents = {
+  draw(lt, D, s) {
+    header(5, "Mark key events", lt);
+    crumbs(["Admin", "Data display", "Events"], 590, lt, 0.35);
+    const cMark = cue(s, "Mark form submissions", 0.9), cSee = cue(s, "to see which pages", 3);
+    const on = ease(clamp((lt - cMark - 0.55) / 0.35));
+    const x = X0, w = W - X0 * 2, y = 690, rowH = 84, ev = ["page_view", "scroll", "form_submit", "click"];
+    const a = rise(lt, 0.5, 0.7);
+    ctx.save(); ctx.globalAlpha *= a; ctx.translate(0, (1 - a) * 40);
+    glass(x, y, w, 70 + ev.length * rowH + 14, 28, { shadow: 0.9 });
+    txt("EVENT NAME", x + 40, y + 44, { size: 18, color: T.muted, weight: 600, track: 2 });
+    txt("MARK AS KEY EVENT", x + w - 40, y + 44, { size: 18, color: T.muted, weight: 600, track: 2, align: "right" });
+    ev.forEach((e, i) => {
+      const ry = y + 70 + i * rowH + rowH / 2 + 4, hot = e === "form_submit", k = hot ? on : 0;
+      if (hot && k > 0) { rr(x + 14, ry - rowH / 2 + 6, w - 28, rowH - 12, 20); ctx.fillStyle = rgba(T.a1, 0.07 * k); ctx.fill(); }
+      txt(e, x + 40, ry, { size: 30, weight: hot ? 600 : 500, color: hot && k > 0.5 ? T.a1 : T.ink, base: "middle" });
+      const tw = 76, th = 42, tx = x + w - 40 - tw;
+      rr(tx, ry - th / 2, tw, th, th / 2); ctx.fillStyle = k > 0 ? mix(T.surface2, T.a1, k) : T.surface2; ctx.fill();
+      ctx.strokeStyle = T.border; ctx.lineWidth = 1; ctx.stroke();
+      ctx.beginPath(); ctx.arc(tx + th / 2 + (tw - th) * k, ry, th / 2 - 5, 0, TAU); ctx.fillStyle = k > 0.5 ? T.ground : T.ink; ctx.fill();
+    });
+    ctx.restore();
+    if (on > 0) ring([x + w - 78, y + 70 + 2 * rowH + rowH / 2 + 4], cMark + 0.6, lt, 76, 42);
+    // Organic → page → lead
+    const fy = 1210, nw = 268, nh = 84, xs = [X0 + nw / 2, CX, W - X0 - nw / 2], fa = rise(lt, cSee - 0.3, 0.6);
+    const labels = ["Organic Search", "Landing page", "Lead"];
+    for (let i = 0; i < 2; i++) {
+      const pts = line2([xs[i] + nw / 2, fy], [xs[i + 1] - nw / 2, fy], 20), L = lengths(pts);
+      ctx.save(); ctx.globalAlpha *= fa; ctx.strokeStyle = rgba(T.a1, 0.4); ctx.lineWidth = 3; strokePartial(pts, L, L[L.length - 1]); ctx.restore();
+      for (let k = 0; k < 4; k++) pulseAlong(pts, L, (lt - cSee - 0.1 - i * 0.45 - k * 0.9) / 0.45, fa);
+    }
+    labels.forEach((l, i) => {
+      node(l, xs[i], fy, nw, nh, i === 2 ? on : 0.25, fa);
+      for (let k = 0; k < 4; k++) ring([xs[2], fy], cSee + 0.1 + 0.9 + k * 0.9, lt, nw, nh);
+    });
+  },
+};
+
+// CTA: particles spiral into the mark, brand and handle resolve.
+SCENES.cta = {
+  init() {
+    const size = 330, lx = CX, ly = 780, off = document.createElement("canvas"); off.width = W; off.height = H;
+    const oc = off.getContext("2d"); drawLogo(oc, lx, ly, size);
+    const data = oc.getImageData(0, 0, W, H).data, r = rng(99), step = 6, a1 = rgb(T.a1);
+    this.parts = [];
+    for (let y = 0; y < H; y += step) for (let x = 0; x < W; x += step) {
+      const i = (y * W + x) * 4;
+      if (data[i + 3] < 140) continue;
+      const near = Math.abs(data[i] - a1[0]) + Math.abs(data[i + 1] - a1[1]) < 60;
+      const ox = lerp(-0.1, 1.1, r()) * W, oy = lerp(0.1, 0.9, r()) * H, ang = (r() < 0.5 ? 1 : -1) * lerp(1.2, 2, r()), vx = ox - lx, vy = oy - ly;
+      this.parts.push({ tx: x, ty: y, ox, oy, cx: lx + (vx * Math.cos(ang) - vy * Math.sin(ang)) * 0.55, cy: ly + (vx * Math.sin(ang) + vy * Math.cos(ang)) * 0.55,
+        d: r() * 0.4, col: near ? T.a1 : T.a2, sz: lerp(1.8, 3, r()) });
+    }
+    Object.assign(this, { size, lx, ly });
+  },
+  draw(lt, D, s) {
+    const solid = ease(clamp((lt - 1.25) / 0.5));
+    for (const p of this.parts) {
+      const e = ease(clamp((lt - p.d) / 1.4)), q = 1 - e;
+      const X = q * q * p.ox + 2 * q * e * p.cx + e * e * p.tx, Y = q * q * p.oy + 2 * q * e * p.cy + e * e * p.ty;
+      ctx.fillStyle = mix(T.ink, p.col, 0.4 + 0.6 * e, (0.55 + 0.45 * e) * (1 - 0.7 * solid));
+      ctx.fillRect(X - p.sz / 2, Y - p.sz / 2, p.sz, p.sz);
+    }
+    if (solid > 0) {
+      drawLogo(ctx, this.lx, this.ly, this.size, solid);
+      const k = clamp((lt - 1.9) / 1.6);
+      if (k > 0 && k < 1) {
+        ctx.save(); ctx.clip(logoClip(this.lx, this.ly, this.size)); ctx.globalCompositeOperation = "lighter";
+        const sx = lerp(this.lx - this.size, this.lx + this.size, ease(k)), g = ctx.createLinearGradient(sx - 80, this.ly - this.size, sx + 80, this.ly + this.size);
+        g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.5, `rgba(255,255,255,${0.5 * Math.sin(Math.PI * k)})`); g.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); ctx.restore();
+      }
+    }
+    const q = rise(lt, cue(s, "Want this", 0.2) + 0.6, 0.7), b = rise(lt, cue(s, "Talk to", 1.8) - 0.1, 0.7), h = rise(lt, cue(s, "Talk to", 1.8) + 0.5, 0.6);
+    txt("Want GA4 set up for SEO?", CX, 1080 + (1 - q) * 20, { size: 40, weight: 500, color: T.muted, align: "center", alpha: q });
+    txt("Alphastrix Digital", CX, 1170 + (1 - b) * 24, { size: fitSize("Alphastrix Digital", W - X0 * 2, 92, 700, -0.03), weight: 700, align: "center", alpha: b, track: -2.5 });
+    if (h > 0) {
+      ctx.save(); ctx.globalAlpha *= h; ctx.translate(0, (1 - h) * 14);
+      pill("DM us on Instagram  @alphastrix_", CX, 1222, { size: 28, align: "center", color: T.ground, fill: T.a1, border: null, weight: 700 });
+      ctx.restore();
+    }
+  },
+};
+
+/* ── Captions ── */
+function chunks(line) {
+  const words = line.text.split(" "), out = []; let cur = [];
+  const flush = () => { if (cur.length) out.push(cur.join(" ")); cur = []; };
+  for (const w of words) {
+    cur.push(w);
+    const len = cur.join(" ").length;
+    if (len > 22 || (/[,.?!]$/.test(w) && len > 9)) flush();
+  }
+  flush();
+  // Merge a dangling one-word tail into the previous chunk
+  if (out.length > 1 && !out[out.length - 1].includes(" ")) out[out.length - 2] += " " + out.pop();
+  const total = out.reduce((a, c) => a + c.length + 1, 0); let acc = 0;
+  return out.map(c => { const s = line.start + (line.end - line.start) * acc / total; acc += c.length + 1; return { text: c, start: s, end: line.start + (line.end - line.start) * acc / total }; });
+}
+let CAPTIONS = [];
+function buildCaptions() { CAPTIONS = TIMING.scenes.flatMap(s => s.lines.flatMap(chunks)); }
+function drawCaption(t) {
+  const c = CAPTIONS.find(c => t >= c.start - 0.05 && t < c.end + 0.12) || null;
+  if (!c) return;
+  const a = smooth(clamp((t - c.start + 0.05) / 0.12)), size = 54, y = 1555 + (1 - a) * 10;
+  // Split into keyword / plain segments so keywords can be lit
+  const segs = []; let rest = c.text;
+  while (rest.length) {
+    let best = null;
+    for (const k of KEYWORDS) { const i = rest.indexOf(k); if (i >= 0 && (!best || i < best.i)) best = { i, k }; }
+    if (!best) { segs.push([rest, false]); break; }
+    if (best.i > 0) segs.push([rest.slice(0, best.i), false]);
+    segs.push([best.k, true]); rest = rest.slice(best.i + best.k.length);
+  }
+  const fitted = fitSize(c.text, W - X0 * 2, size, 800, -0.01);
+  const widths = segs.map(([s]) => measure(s, fitted, 800, -0.01 * fitted).width), total = widths.reduce((a, b) => a + b, 0);
+  let x = CX - total / 2;
+  ctx.save(); ctx.globalAlpha = a; ctx.shadowColor = "rgba(0,0,0,0.85)"; ctx.shadowBlur = 18; ctx.shadowOffsetY = 3;
+  segs.forEach(([s, hot], i) => { txt(s, x, y, { size: fitted, weight: 800, color: hot ? T.a1 : T.ink, track: -0.01 * fitted }); x += widths[i]; });
+  ctx.restore();
+}
+
+/* ── Runtime ── */
+let ready = Promise.resolve();
+function fitCanvas() {
+  if (RENDER) { canvas.style.width = W + "px"; canvas.style.height = H + "px"; return; }
+  const r = document.getElementById("stage").getBoundingClientRect(), s = Math.min((r.width - 32) / W, (r.height - 32) / H, 1);
+  canvas.style.width = W * s + "px"; canvas.style.height = H * s + "px";
+}
+addEventListener("resize", fitCanvas);
+
+function renderFrame(t) {
+  t = clamp(t, 0, FILM - 1e-6);
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+  background();
+  const i = TIMING.scenes.findIndex(s => t >= s.start && t < s.end), s = TIMING.scenes[Math.max(0, i)];
+  const lt = t - s.start, D = s.end - s.start, last = i === TIMING.scenes.length - 1;
+  // Scene envelope: quick fade and drift between scenes. The first frame is fully drawn (it's the preview frame).
+  const inA = s.start === 0 ? 1 : smooth(clamp(lt / 0.3)), outA = last ? 1 : smooth(clamp((D - lt) / 0.28));
+  ctx.save(); ctx.globalAlpha = inA * outA; ctx.translate(0, (1 - inA) * 30 - (1 - outA) * 30);
+  SCENES[s.id].draw(lt, D, s);
+  ctx.restore();
+  topBar(t);
+  drawCaption(t);
+  grain();
+  ctx.restore();
+}
+window.seek = async sec => { await ready; renderFrame(+sec || 0); return sec; };
+
+(async () => {
+  setup(Q.get("size") || "1080x1920", "alphastrix");
+  if (RENDER) document.body.classList.add("render");
+  ready = (async () => { await document.fonts.ready; for (const s of Object.values(SCENES)) if (s.init) await s.init(); buildCaptions(); })();
+  await ready;
+  window.motionInfo = { duration: FILM, width: W, height: H, effect: "ga4-seo", effects: ["ga4-seo"], loop: false };
+  if (RENDER) { renderFrame(+Q.get("t") || 0); window.__motionReady = true; return; }
+
+  const $ = id => document.getElementById(id), scrub = $("scrub"), vo = $("vo");
+  scrub.max = FILM;
+  let playing = !Q.has("t"), t = +Q.get("t") || 0, last = performance.now();
+  const setPlaying = p => {
+    playing = p; $("play").textContent = p ? "Pause" : "Play"; last = performance.now();
+    if (p) { vo.currentTime = t; vo.play().catch(() => {}); } else vo.pause();
+  };
+  $("play").onclick = () => setPlaying(!playing);
+  scrub.oninput = () => { setPlaying(false); t = +scrub.value; };
+  addEventListener("keydown", e => { if (e.code === "Space") { e.preventDefault(); setPlaying(!playing); } });
+  const loop = now => {
+    if (playing) { t += (now - last) / 1000; if (t >= FILM) { t = 0; vo.currentTime = 0; } }
+    last = now; renderFrame(t); scrub.value = t; $("time").textContent = `${t.toFixed(2)}s / ${FILM.toFixed(2)}s`;
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

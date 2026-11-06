@@ -31,6 +31,8 @@ for (let i = 0; i < argv.length; i++) {
   else if (a === "--brand") opts.brand = next();
   else if (a === "--fps") opts.fps = Number(next());
   else if (a === "--out") opts.out = next();
+  else if (a === "--page") opts.page = next();
+  else if (a === "--audio") opts.audio = next();
   else if (a === "--still") opts.still = Number(next());
   else if (a === "--param") opts.params.push(next());
   else if (a === "--verified") opts.params.push("verified=1");
@@ -39,7 +41,7 @@ for (let i = 0; i < argv.length; i++) {
   else { console.error(`Unknown argument: ${a}`); process.exit(1); }
 }
 function readHelp() {
-  return "Usage: node motion/render.mjs (--effect <name> | --all) [--size WxH] [--brand alphastrix|flow] [--fps 30] [--still <sec>] [--out file] [--param key=value] [--verified]";
+  return "Usage: node motion/render.mjs (--effect <name> | --all | --page <file.html>) [--size WxH] [--brand alphastrix|flow] [--fps 30] [--still <sec>] [--out file] [--audio file] [--param key=value] [--verified]";
 }
 if (!opts.effect && !opts.all) opts.effect = "chart-morph";
 
@@ -54,7 +56,8 @@ page.on("pageerror", e => console.error("page error:", e.message));
 async function load(effect) {
   const q = new URLSearchParams({ render: "", effect, size: opts.size, brand: opts.brand });
   for (const p of opts.params) { const i = p.indexOf("="); q.set(p.slice(0, i), p.slice(i + 1)); }
-  await page.goto(`${pathToFileURL(path.join(here, "motion.html")).href}?${q}`);
+  const html = opts.page ? path.resolve(opts.page) : path.join(here, "motion.html");
+  await page.goto(`${pathToFileURL(html).href}?${q}`);
   await page.waitForFunction(() => window.__motionReady === true, null, { timeout: 30000 });
   return page.evaluate(() => window.motionInfo);
 }
@@ -76,9 +79,10 @@ async function still(effect) {
 
 async function video(effect) {
   const info = await load(effect);
-  const file = (opts.all ? null : opts.out) || path.join(outDir, `${effect}-${opts.size}.mp4`);
+  const file = (opts.all ? null : opts.out) || path.join(outDir, `${info.effect || effect}-${opts.size}.mp4`);
   const frames = Math.round(info.duration * opts.fps);
-  const ff = spawn("ffmpeg", ["-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", String(opts.fps), "-i", "-",
+  const audio = opts.audio ? ["-i", path.resolve(opts.audio), "-map", "0:v", "-map", "1:a", "-af", "loudnorm=I=-14:TP=-1.5:LRA=11", "-ar", "48000", "-c:a", "aac", "-b:a", "192k", "-t", String(info.duration)] : [];
+  const ff = spawn("ffmpeg", ["-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", String(opts.fps), "-i", "-", ...audio,
     "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "16", "-preset", "medium", "-movflags", "+faststart", file],
     { stdio: ["pipe", "inherit", "inherit"] });
   const done = new Promise((res, rej) => ff.on("close", c => (c === 0 ? res() : rej(new Error(`ffmpeg exited ${c}`)))));
@@ -87,7 +91,7 @@ async function video(effect) {
   for (let i = 0; i < frames; i++) {
     const buf = await grab(i / opts.fps);
     if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once("drain", r));
-    if (i % opts.fps === 0) process.stdout.write(`\r${effect}: ${i}/${frames} frames`);
+    if (i % opts.fps === 0) process.stdout.write(`\r${info.effect || effect}: ${i}/${frames} frames`);
   }
   ff.stdin.end();
   await done;

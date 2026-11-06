@@ -51,6 +51,35 @@ Every piece of copy and data sits in the `CONTENT` object at the top of `motion.
 
 The default numbers are placeholders. Effects that show numbers carry an **Illustrative Data** tag until you pass `?verified=1` (or `--verified`). Only do that once the figures are real.
 
+## Films
+
+`films/` holds longer, narrated pieces built on the same drawing core. Their timing comes from the voiceover, so every visual beat lands on the spoken word.
+
+**`ga4-seo.html`**: "How to use Google Analytics 4 for SEO", a 45-second vertical Reel (1080×1920) in seven scenes:
+
+| Scene | Effect | Says |
+| --- | --- | --- |
+| Hook | Masked kinetic type | Your SEO is working. But can you prove it? |
+| 1. Link Search Console | Breadcrumb path, pulse-linked nodes, glass lens on a queries table | Admin › Product links › Search Console links, then publish the reports |
+| 2. Isolate organic traffic | Bar chart with a filter that dims everything but Organic Search | Traffic acquisition, filtered to Organic Search |
+| 3. Find your winning pages | Landing page table under a glass lens | Engagement › Landing page |
+| 4. Check engagement rate | Count-up gauges, one page working and one that needs a rewrite | GA4's engaged-session definition on screen |
+| 5. Mark key events | Toggle `form_submit` to a key event, then pulses from Organic Search to a lead | Admin › Data display › Events |
+| CTA | Particle logo assembly | Talk to Alphastrix Digital, @alphastrix_ |
+
+Burned-in captions highlight the key terms, because most Reels are watched on mute. All report numbers are illustrative and labelled that way.
+
+Rebuild it:
+
+```bash
+# 1. Voiceover + timing (Kokoro, Apache-2.0, runs offline). Voices: hm_omega, hm_psi, hf_alpha, hf_beta
+python motion/films/voiceover.py --model kokoro-v1.0.fp16.onnx --voices voices-v1.0.bin --voice hm_omega
+# 2. Video with audio
+npm run motion -- --page motion/films/ga4-seo.html --size 1080x1920 --audio motion/films/ga4-seo.vo.wav
+```
+
+To use a different voice (an ElevenLabs export or a human read), record each sentence in `SCRIPT` inside `voiceover.py`, then rebuild `ga4-seo.vo.wav` and `ga4-seo.timing.js` with the same gaps. The visuals follow automatically.
+
 ## API (for your own render pipeline)
 
 ```js
