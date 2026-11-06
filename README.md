@@ -39,10 +39,19 @@ All copy lives in `lib/site.ts`: nav, services, process, stats, case studies, te
 
 The contact form has no backend. It opens the visitor's email client with the enquiry filled in. To collect submissions directly, point `onSubmit` in `components/Contact.tsx` at a form service or an API route.
 
+## Motion graphics
+
+`motion/` holds a standalone motion engine for social and launch videos in the same brand system as the site: eight effects, deterministic frames, and a one-command MP4 export. See [`motion/README.md`](motion/README.md) for usage and [`motion/MOTION_FLOW.md`](motion/MOTION_FLOW.md) for the brand motion rules and Google Flow prompts.
+
+```bash
+npm run motion -- --effect chart-morph --size 1080x1350
+```
+
 ## Structure
 
 ```
 app/          layout, page, global styles, favicon
 components/   one file per section, plus shared UI primitives in ui.tsx
 lib/site.ts   site content
+motion/       motion engine, exporter and brand motion rules
 ```

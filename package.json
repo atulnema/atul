@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "motion": "node motion/render.mjs"
   },
   "dependencies": {
     "framer-motion": "^13.4.2",
