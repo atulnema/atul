@@ -1,0 +1,1011 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Motion Engine</title>
+<!--
+  Alphastrix motion engine. One self-contained file, no dependencies.
+
+  Every frame is a pure function of time, so any moment can be rendered on demand:
+    window.seek(seconds)   draws the frame at that time (Promise)
+    window.motionInfo      { duration, width, height, effect, effects }
+
+  URL parameters
+    ?effect=chart-morph    which effect to play (see EFFECTS below)
+    ?size=1080x1350        canvas resolution
+    ?brand=alphastrix      token set: alphastrix | flow
+    ?render                no animation loop; waits for seek() calls (headless export)
+    ?t=4.4                 open paused on a specific frame
+    ?verified=1            hides the "Illustrative Data" tag once the numbers are real
+    plus any key from CONTENT, e.g. ?heroWord=RESULTS&values=12,18,15,22,30,41
+
+  Loop contract: 0–2.2s move, 2.2–6.6s hold with micro-motion, 6.6–8.0s return.
+  Frame 8.0 is frame 0.
+-->
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #050507; color: #F2EFE9;
+    font: 14px/1.4 Inter, "Segoe UI", "Helvetica Neue", Arial, sans-serif; }
+  body { display: flex; flex-direction: column; }
+  #stage { flex: 1; display: grid; place-items: center; padding: 16px; min-height: 0; }
+  canvas { display: block; border-radius: 10px; box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+  #ui { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 12px 16px;
+    border-top: 1px solid #1C1C26; background: #0B0B10; }
+  #ui select, #ui button { background: #121219; color: inherit; border: 1px solid #2A2A36;
+    border-radius: 8px; padding: 7px 10px; font: inherit; cursor: pointer; }
+  #ui button:hover, #ui select:hover { border-color: #C8FF4D; }
+  #scrub { flex: 1; min-width: 160px; accent-color: #C8FF4D; }
+  #time { font-variant-numeric: tabular-nums; min-width: 92px; color: #9A98A6; }
+  #phase { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #C8FF4D; min-width: 64px; }
+  body.render { background: transparent; }
+  body.render #ui { display: none; }
+  body.render #stage { padding: 0; place-items: start; }
+  body.render canvas { border-radius: 0; box-shadow: none; }
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="c"></canvas></div>
+<div id="ui">
+  <select id="effectSel" aria-label="Effect"></select>
+  <select id="sizeSel" aria-label="Size">
+    <option>1080x1080</option><option>1080x1350</option><option>1080x1920</option><option>1920x1080</option>
+  </select>
+  <select id="brandSel" aria-label="Brand tokens">
+    <option value="alphastrix">Alphastrix tokens</option><option value="flow">Flow reference tokens</option>
+  </select>
+  <button id="play">Pause</button>
+  <input id="scrub" type="range" min="0" max="8" step="0.001" value="0" aria-label="Timeline" />
+  <span id="time">0.00s</span>
+  <span id="phase">move</span>
+  <button id="audit" title="Jump to the 4.4s self-audit frame">4.4s audit</button>
+  <button id="png">Save PNG</button>
+</div>
+<script>
+"use strict";
+
+/* ───────────────────────── Timeline ───────────────────────── */
+const DUR = 8, MOVE = 2.2, RET = 6.6;
+
+/* ───────────────────────── Tokens ───────────────────────── */
+const THEMES = {
+  // Pulled from the website's tailwind config so video and site match.
+  alphastrix: { ground: "#07070A", surface: "#121219", surface2: "#1C1C26", ink: "#F2EFE9",
+    muted: "#9A98A6", a1: "#C8FF4D", a2: "#7C5CFF", border: "rgba(242,239,233,0.10)" },
+  // The MOTION_FLOW.md reference tokens from the prompt pack.
+  flow: { ground: "#0B0B0F", surface: "#16181F", surface2: "#1F2230", ink: "#F8FAFC",
+    muted: "#64748B", a1: "#2563EB", a2: "#38BDF8", border: "rgba(56,189,248,0.125)" },
+};
+const FONT = '"Inter Tight", Inter, "SF Pro Display", "Segoe UI", "Helvetica Neue", Arial, sans-serif';
+
+/* ───────────────────────── Content ─────────────────────────
+   Every number here is a placeholder. The "Illustrative Data" tag stays on
+   until you pass ?verified=1 with your real figures. */
+const CONTENT = {
+  // 05 Chart morph
+  chartKicker: "Organic sessions · last 6 days",
+  chartTitle: "Search traffic, compounding",
+  labels: ["M", "T", "W", "T", "F", "S"],
+  values: [1240, 1580, 1420, 1960, 2310, 2740],
+  keyValue: "",            // defaults to the formatted peak value
+  // 06 Dashboard zoom
+  dashTitle: "Growth dashboard",
+  kpiName: "Qualified leads",
+  kpiFigure: "1,284",
+  kpiDelta: "+24%",
+  // 07 Spring stack
+  stackKicker: "What we do",
+  cards: [
+    { no: "01", title: "SEO & Content", body: "Audits, keyword strategy and content written to rank.", tags: ["Technical SEO", "Content"] },
+    { no: "02", title: "Performance Ads", body: "Google, Meta and LinkedIn campaigns run on real numbers.", tags: ["Google Ads", "Meta Ads"] },
+    { no: "03", title: "Web Design & Build", body: "Fast websites built around one job: turning visitors into leads.", tags: ["UX/UI", "Next.js"] },
+  ],
+  // 09 Masked type
+  heroWord: "GROWTH",
+  subtitle: "Marketing that compounds.",
+  // 12 Shutter slats
+  badge: "New case study",
+  image: "",               // optional image URL; otherwise a branded hero is drawn
+  // 15 Flowing paths
+  source: "Search",
+  channels: ["SEO", "Ads", "Social"],
+  output: "Leads",
+  // 16 Particle logo + shared
+  brand: "Alphastrix Digital",
+  tagline: "Strategy · Design · Performance",
+  // 02 Search results
+  query: "how do I get more leads",
+  results: [
+    { title: "Technical SEO audit", sub: "Services · SEO", metric: "94", unit: "Health score" },
+    { title: "Google Ads account review", sub: "Services · Performance", metric: "3.4x", unit: "ROAS" },
+    { title: "Landing page teardown", sub: "Services · Web", metric: "+38%", unit: "Conversion rate" },
+  ],
+};
+
+/* ───────────────────────── Params ───────────────────────── */
+const Q = new URLSearchParams(location.search);
+const RENDER = Q.has("render");
+const VERIFIED = Q.get("verified") === "1";
+for (const key of Object.keys(CONTENT)) {
+  if (!Q.has(key)) continue;
+  const raw = Q.get(key), cur = CONTENT[key];
+  if (Array.isArray(cur)) {
+    try { CONTENT[key] = JSON.parse(raw); }
+    catch { CONTENT[key] = raw.split(",").map(s => s.trim()).map(s => (typeof cur[0] === "number" ? Number(s) : s)); }
+  } else CONTENT[key] = raw;
+}
+
+/* ───────────────────────── Math ───────────────────────── */
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, k) => a + (b - a) * k;
+const smooth = x => x * x * (3 - 2 * x);
+const TAU = Math.PI * 2;
+
+function cubicBezier(x1, y1, x2, y2) {
+  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+  const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+  const sx = t => ((ax * t + bx) * t + cx) * t;
+  const sy = t => ((ay * t + by) * t + cy) * t;
+  const dx = t => (3 * ax * t + 2 * bx) * t + cx;
+  return x => {
+    if (x <= 0) return 0;
+    if (x >= 1) return 1;
+    let t = x;
+    for (let i = 0; i < 8; i++) {
+      const e = sx(t) - x, d = dx(t);
+      if (Math.abs(e) < 1e-6 || Math.abs(d) < 1e-6) break;
+      t -= e / d;
+    }
+    if (Math.abs(sx(t) - x) > 1e-4) {           // Newton stalled: bisect
+      let lo = 0, hi = 1; t = x;
+      for (let i = 0; i < 30; i++) { (sx(t) < x ? (lo = t) : (hi = t)); t = (lo + hi) / 2; }
+    }
+    return sy(t);
+  };
+}
+// The house curve: fast out of the gate, long soft landing. No overshoot.
+const ease = cubicBezier(0.16, 1, 0.3, 1);
+
+// 0 → 1 during the move, 1 through the hold, 1 → 0 during the return.
+function amt(t, dIn = 0, dOut = 0, inDur = MOVE - dIn, outDur = DUR - RET - dOut) {
+  const a = ease(clamp((t - dIn) / inDur));
+  const b = ease(clamp((t - RET - dOut) / outDur));
+  return a * (1 - b);
+}
+// Hold envelope: fades micro-motion in and out so nothing pops at 2.2s or 6.6s.
+function env(t, fade = 0.6) { return smooth(clamp((t - MOVE) / fade)) * smooth(clamp((RET - t) / fade)); }
+// Damped spring, only used where an effect explicitly asks for overshoot (07).
+function spring(x, w = 9, z = 0.55) {
+  if (x <= 0) return 0;
+  const wd = w * Math.sqrt(1 - z * z);
+  return 1 - Math.exp(-z * w * x) * (Math.cos(wd * x) + (z * w / wd) * Math.sin(wd * x));
+}
+function rng(seed) {                            // mulberry32: same seed, same frame
+  return () => {
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ───────────────────────── Colour ───────────────────────── */
+function rgb(hex) { const n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+function rgba(hex, a) { const [r, g, b] = rgb(hex); return `rgba(${r},${g},${b},${a})`; }
+function mix(h1, h2, k, a = 1) {
+  const A = rgb(h1), B = rgb(h2);
+  return `rgba(${Math.round(lerp(A[0], B[0], k))},${Math.round(lerp(A[1], B[1], k))},${Math.round(lerp(A[2], B[2], k))},${a})`;
+}
+
+/* ───────────────────────── Canvas state ───────────────────────── */
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+let W = 1080, H = 1080, U = 1, CX = 540, CY = 540, T = THEMES.alphastrix;
+let grainPattern = null;
+
+function setup(size, brand) {
+  const m = /^(\d{3,4})x(\d{3,4})$/.exec(size || "") || [0, 1080, 1080];
+  W = +m[1]; H = +m[2]; U = Math.min(W, H) / 1080; CX = W / 2; CY = H / 2;
+  T = THEMES[brand] || THEMES.alphastrix;
+  canvas.width = W; canvas.height = H;
+  // Static film grain, generated once from a fixed seed.
+  const g = document.createElement("canvas"); g.width = g.height = 192;
+  const gx = g.getContext("2d"), img = gx.createImageData(192, 192), r = rng(7);
+  for (let i = 0; i < img.data.length; i += 4) { const v = r() * 255; img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255; }
+  gx.putImageData(img, 0, 0);
+  grainPattern = ctx.createPattern(g, "repeat");
+  fitCanvas();
+}
+
+/* ───────────────────────── Drawing helpers ───────────────────────── */
+const font = (size, weight = 600) => `${weight} ${size}px ${FONT}`;
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, Math.max(0, Math.min(r, w / 2, h / 2))); }
+function txt(s, x, y, o = {}) {
+  const { size = 32, weight = 600, color = T.ink, align = "left", base = "alphabetic", track = 0, alpha = 1 } = o;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.font = font(size, weight); ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = base;
+  ctx.letterSpacing = `${track}px`;
+  ctx.fillText(s, x, y);
+  ctx.restore();
+}
+function measure(s, size, weight = 600, track = 0) {
+  ctx.save(); ctx.font = font(size, weight); ctx.letterSpacing = `${track}px`;
+  const m = ctx.measureText(s); ctx.restore(); return m;
+}
+function fitSize(s, maxW, size, weight = 600, trackEm = 0) {
+  const w = measure(s, size, weight, size * trackEm).width;
+  return w > maxW ? size * maxW / w : size;
+}
+function wrap(s, maxW, size, weight = 400) {
+  ctx.save(); ctx.font = font(size, weight);
+  const lines = []; let line = "";
+  for (const word of s.split(" ")) {
+    const test = line ? line + " " + word : word;
+    if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = word; } else line = test;
+  }
+  if (line) lines.push(line);
+  ctx.restore(); return lines;
+}
+function glass(x, y, w, h, r, o = {}) {
+  const { alpha = 1, glow = 0, fill = T.surface, shadow = 1 } = o;
+  ctx.save();
+  ctx.globalAlpha *= alpha;
+  ctx.shadowColor = `rgba(0,0,0,${0.5 * shadow})`; ctx.shadowBlur = 50 * U; ctx.shadowOffsetY = 22 * U;
+  rr(x, y, w, h, r); ctx.fillStyle = rgba(fill, 0.94); ctx.fill();
+  ctx.shadowColor = "transparent";
+  const sheen = ctx.createLinearGradient(x, y, x, y + h);
+  sheen.addColorStop(0, "rgba(255,255,255,0.055)"); sheen.addColorStop(0.45, "rgba(255,255,255,0)");
+  ctx.fillStyle = sheen; ctx.fill();
+  ctx.lineWidth = Math.max(1, U); ctx.strokeStyle = T.border; ctx.stroke();
+  if (glow > 0) {
+    ctx.strokeStyle = rgba(T.a1, 0.75 * glow); ctx.shadowColor = rgba(T.a1, 0.55 * glow); ctx.shadowBlur = 26 * U;
+    ctx.lineWidth = 1.5 * U; ctx.stroke(); ctx.shadowColor = "transparent";
+  }
+  // 1px specular rim along the top edge
+  const rim = ctx.createLinearGradient(x, 0, x + w, 0);
+  rim.addColorStop(0, "rgba(255,255,255,0)"); rim.addColorStop(0.5, "rgba(255,255,255,0.32)"); rim.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.beginPath(); ctx.moveTo(x + r, y + 0.5); ctx.lineTo(x + w - r, y + 0.5);
+  ctx.strokeStyle = rim; ctx.lineWidth = Math.max(1, U); ctx.stroke();
+  ctx.restore();
+}
+function pill(label, x, y, o = {}) {
+  const { size = 20 * U, fill = T.surface2, color = T.ink, border = T.border, alpha = 1, align = "left", weight = 600 } = o;
+  const padX = size * 0.75, h = size * 1.9, w = measure(label, size, weight).width + padX * 2;
+  const left = align === "right" ? x - w : align === "center" ? x - w / 2 : x;
+  ctx.save(); ctx.globalAlpha *= alpha;
+  rr(left, y, w, h, h / 2); ctx.fillStyle = fill; ctx.fill();
+  if (border) { ctx.strokeStyle = border; ctx.lineWidth = Math.max(1, U); ctx.stroke(); }
+  txt(label, left + padX, y + h / 2, { size, weight, color, base: "middle" });
+  ctx.restore();
+  return { w, h, left };
+}
+function background() {
+  ctx.fillStyle = T.ground; ctx.fillRect(0, 0, W, H);
+  let g = ctx.createRadialGradient(W * 0.2, H * 0.1, 0, W * 0.2, H * 0.1, Math.max(W, H) * 0.7);
+  g.addColorStop(0, rgba(T.a2, 0.10)); g.addColorStop(1, rgba(T.a2, 0));
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  g = ctx.createRadialGradient(W * 0.9, H * 0.95, 0, W * 0.9, H * 0.95, Math.max(W, H) * 0.6);
+  g.addColorStop(0, rgba(T.a1, 0.05)); g.addColorStop(1, rgba(T.a1, 0));
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  // Faint grid with a soft radial falloff
+  ctx.save();
+  ctx.strokeStyle = rgba(T.ink, 0.035); ctx.lineWidth = 1;
+  const step = 72 * U;
+  ctx.beginPath();
+  for (let x = (W % step) / 2; x < W; x += step) { ctx.moveTo(Math.round(x) + 0.5, 0); ctx.lineTo(Math.round(x) + 0.5, H); }
+  for (let y = (H % step) / 2; y < H; y += step) { ctx.moveTo(0, Math.round(y) + 0.5); ctx.lineTo(W, Math.round(y) + 0.5); }
+  ctx.stroke();
+  const v = ctx.createRadialGradient(CX, CY, Math.min(W, H) * 0.25, CX, CY, Math.max(W, H) * 0.75);
+  v.addColorStop(0, rgba(T.ground, 0)); v.addColorStop(1, rgba(T.ground, 0.92));
+  ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
+function grain() {
+  ctx.save(); ctx.globalAlpha = 0.045; ctx.globalCompositeOperation = "overlay";
+  ctx.fillStyle = grainPattern; ctx.fillRect(0, 0, W, H); ctx.restore();
+}
+function illustrativeTag() {
+  pill("Illustrative Data", W - 36 * U, 36 * U, { size: 17 * U, align: "right", color: T.muted, fill: rgba(T.ground, 0.6), weight: 500 });
+}
+// Polyline helpers for partial strokes and travelling pulses
+function lengths(pts) { const L = [0]; for (let i = 1; i < pts.length; i++) L.push(L[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])); return L; }
+function pointAt(pts, L, d) {
+  d = clamp(d, 0, L[L.length - 1]);
+  let i = 1; while (i < L.length - 1 && L[i] < d) i++;
+  const k = (d - L[i - 1]) / ((L[i] - L[i - 1]) || 1);
+  return [lerp(pts[i - 1][0], pts[i][0], k), lerp(pts[i - 1][1], pts[i][1], k)];
+}
+function strokePartial(pts, L, upTo) {
+  ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) {
+    if (L[i] >= upTo) { const p = pointAt(pts, L, upTo); ctx.lineTo(p[0], p[1]); break; }
+    ctx.lineTo(pts[i][0], pts[i][1]);
+  }
+  ctx.stroke();
+}
+// Monotone cubic interpolation: a smooth curve that never overshoots a data point.
+function monotone(xs, ys, per = 28) {
+  const n = xs.length, d = [], m = new Array(n);
+  for (let i = 0; i < n - 1; i++) d[i] = (ys[i + 1] - ys[i]) / (xs[i + 1] - xs[i]);
+  m[0] = d[0]; m[n - 1] = d[n - 2];
+  for (let i = 1; i < n - 1; i++) m[i] = d[i - 1] * d[i] <= 0 ? 0 : (d[i - 1] + d[i]) / 2;
+  for (let i = 0; i < n - 1; i++) {
+    if (d[i] === 0) { m[i] = m[i + 1] = 0; continue; }
+    const a = m[i] / d[i], b = m[i + 1] / d[i], s = a * a + b * b;
+    if (s > 9) { const k = 3 / Math.sqrt(s); m[i] = k * a * d[i]; m[i + 1] = k * b * d[i]; }
+  }
+  const pts = [];
+  for (let i = 0; i < n - 1; i++) {
+    const h = xs[i + 1] - xs[i];
+    for (let k = 0; k < per; k++) {
+      const s = k / per, s2 = s * s, s3 = s2 * s;
+      pts.push([xs[i] + s * h, (2 * s3 - 3 * s2 + 1) * ys[i] + (s3 - 2 * s2 + s) * h * m[i] + (-2 * s3 + 3 * s2) * ys[i + 1] + (s3 - s2) * h * m[i + 1]]);
+    }
+  }
+  pts.push([xs[n - 1], ys[n - 1]]);
+  return pts;
+}
+function glowDot(x, y, r, color, a = 1) {
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, rgba("#FFFFFF", a)); g.addColorStop(0.25, rgba(color, 0.9 * a)); g.addColorStop(1, rgba(color, 0));
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+}
+const fmt = v => (typeof v === "number" ? v.toLocaleString("en-US") : String(v));
+
+// Brand mark (same paths as app/icon.svg). Glyph spans 5→27 in a 32-unit box.
+const LOGO_A = new Path2D("M16 5 27 27H21L16 17 11 27H5L16 5Z");
+const LOGO_B = new Path2D("M16 5 27 27H21L16 17Z");
+function drawLogo(c, x, y, size, alpha = 1) {
+  const s = size / 22;
+  c.save(); c.globalAlpha *= alpha; c.translate(x - 16 * s, y - 16 * s); c.scale(s, s);
+  c.fillStyle = T.a1; c.fill(LOGO_A);
+  c.globalAlpha *= 0.85; c.fillStyle = T.a2; c.fill(LOGO_B);
+  c.restore();
+}
+function logoClip(x, y, size) {
+  const s = size / 22, p = new Path2D(), m = new DOMMatrix().translate(x - 16 * s, y - 16 * s).scale(s);
+  p.addPath(LOGO_A, m); return p;
+}
+
+/* ═════════════════════════ EFFECTS ═════════════════════════ */
+const EFFECTS = {};
+
+/* 05 · Chart morph: bars slim into hairlines while a line traces their peaks */
+EFFECTS["chart-morph"] = {
+  name: "05 · Chart Morph", numbers: true,
+  draw(t) {
+    const vals = CONTENT.values.map(Number), labels = CONTENT.labels, n = vals.length;
+    const mx = Math.max(72 * U, W * 0.09), left = mx, right = W - mx;
+    const top = H * 0.36, bottom = H * 0.8, chartH = bottom - top, slot = (right - left) / n;
+    const vmax = Math.max(...vals) * 1.12, peak = vals.indexOf(Math.max(...vals));
+    const barW = slot * 0.54;
+    const xs = vals.map((_, i) => left + slot * (i + 0.5));
+    const ys = vals.map(v => bottom - (v / vmax) * chartH);
+
+    txt(CONTENT.chartKicker.toUpperCase(), left, H * 0.13, { size: 20 * U, color: T.a1, weight: 600, track: 2.5 * U });
+    const ts = fitSize(CONTENT.chartTitle, right - left, 60 * U, 700, -0.03);
+    txt(CONTENT.chartTitle, left, H * 0.13 + ts * 1.25, { size: ts, weight: 700, track: -0.03 * ts });
+
+    // Rock-steady gridlines
+    ctx.strokeStyle = rgba(T.ink, 0.08); ctx.lineWidth = Math.max(1, U);
+    for (let i = 0; i <= 4; i++) { const y = Math.round(bottom - chartH * i / 4) + 0.5; ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y); ctx.stroke(); }
+
+    const lineP = amt(t, 0.35, 0, MOVE - 0.35, 0.9);
+    const badge = ease(clamp((t - MOVE) / 0.5)) * (1 - ease(clamp((t - 6.3) / 0.35)));
+
+    // Bars → hairlines, staggered wave
+    for (let i = 0; i < n; i++) {
+      const m = amt(t, i * 0.1, 0.15 + i * 0.06, MOVE - 0.5, 1.4 - 0.45);
+      const w = lerp(barW, 2.5 * U, m), x = xs[i] - w / 2;
+      const g = ctx.createLinearGradient(0, ys[i], 0, bottom);
+      g.addColorStop(0, rgba(T.a2, lerp(0.95, 0.55, m))); g.addColorStop(1, rgba(T.a2, lerp(0.35, 0.08, m)));
+      ctx.fillStyle = g; rr(x, ys[i], w, bottom - ys[i], Math.min(w / 2, 10 * U)); ctx.fill();
+      txt(labels[i] ?? "", xs[i], bottom + 40 * U, { size: 22 * U, color: T.muted, align: "center", weight: 500 });
+      const a = i === peak ? 1 - badge : 1;
+      txt(fmt(vals[i]), xs[i], ys[i] - 22 * U, { size: 22 * U, color: i === peak ? T.ink : T.muted, align: "center", weight: 600, alpha: a });
+    }
+
+    // Trend line (monotone, so it never lies about a value)
+    const pts = monotone(xs, ys), L = lengths(pts), total = L[L.length - 1], head = total * lineP;
+    if (lineP > 0.001) {
+      const hx = pointAt(pts, L, head)[0];
+      ctx.save();
+      ctx.beginPath(); ctx.rect(left - 4, 0, hx - left + 4, H); ctx.clip();
+      ctx.beginPath(); ctx.moveTo(pts[0][0], bottom); pts.forEach(p => ctx.lineTo(p[0], p[1])); ctx.lineTo(pts[pts.length - 1][0], bottom); ctx.closePath();
+      const fill = ctx.createLinearGradient(0, top, 0, bottom);
+      fill.addColorStop(0, rgba(T.a1, 0.28 * lineP)); fill.addColorStop(1, rgba(T.a1, 0));
+      ctx.fillStyle = fill; ctx.fill();
+      ctx.restore();
+      ctx.save();
+      ctx.lineCap = "round"; ctx.lineJoin = "round";
+      ctx.shadowColor = rgba(T.a1, 0.6); ctx.shadowBlur = 18 * U;
+      ctx.strokeStyle = T.a1; ctx.lineWidth = 4 * U; strokePartial(pts, L, head);
+      ctx.restore();
+      xs.forEach((x, i) => {
+        const reach = clamp((hx - x) / (12 * U) + 1);
+        if (reach <= 0) return;
+        ctx.save(); ctx.globalAlpha = reach;
+        ctx.beginPath(); ctx.arc(x, ys[i], 7 * U, 0, TAU); ctx.fillStyle = T.ground; ctx.fill();
+        ctx.lineWidth = 3 * U; ctx.strokeStyle = T.a1; ctx.stroke();
+        ctx.restore();
+      });
+    }
+
+    // Hold: a pulse rides the curve every 2 seconds
+    const e = env(t);
+    if (e > 0) {
+      const k = ((t - MOVE) / 2) % 1, p = pointAt(pts, L, total * ease(k));
+      glowDot(p[0], p[1], 26 * U, T.a1, e * Math.sin(Math.PI * k));
+    }
+    if (badge > 0.001) {
+      const label = CONTENT.keyValue || fmt(vals[peak]);
+      const s = 26 * U, bw = measure(label, s, 700).width + s * 1.6, bh = s * 2;
+      const bx = xs[peak], by = ys[peak] - 30 * U - bh;
+      ctx.save(); ctx.globalAlpha = badge;
+      ctx.translate(bx, by + bh); ctx.scale(lerp(0.85, 1, badge), lerp(0.85, 1, badge)); ctx.translate(-bx, -(by + bh));
+      ctx.shadowColor = rgba(T.a1, 0.45); ctx.shadowBlur = 24 * U;
+      rr(bx - bw / 2, by, bw, bh, bh / 2); ctx.fillStyle = T.a1; ctx.fill();
+      ctx.beginPath(); ctx.moveTo(bx - 9 * U, by + bh - 1); ctx.lineTo(bx + 9 * U, by + bh - 1); ctx.lineTo(bx, by + bh + 9 * U); ctx.fill();
+      ctx.shadowColor = "transparent";
+      txt(label, bx, by + bh / 2, { size: s, weight: 700, color: T.ground, align: "center", base: "middle" });
+      ctx.restore();
+    }
+  },
+};
+
+/* 06 · Dashboard zoom: brackets lock onto one KPI, it lifts into hero position */
+EFFECTS["dashboard-zoom"] = {
+  name: "06 · Dashboard Zoom", numbers: true,
+  init() {
+    const r = rng(42);
+    const series = (n, trend) => Array.from({ length: n }, (_, i) => 0.35 + trend * i / n + (r() - 0.5) * 0.22);
+    this.tiles = [
+      { label: "Sessions", value: "48.2k", delta: "+12%", kind: "spark", data: series(14, 0.4) },
+      { label: CONTENT.kpiName, value: CONTENT.kpiFigure, delta: CONTENT.kpiDelta, kind: "spark", data: series(14, 0.55), target: true },
+      { label: "Cost per lead", value: "₹412", delta: "−18%", kind: "bars", data: series(7, -0.3) },
+      { label: "ROAS", value: "3.4x", delta: "+0.6", kind: "ring", data: [0.68] },
+      { label: "Avg. position", value: "4.1", delta: "+2.3", kind: "bars", data: series(7, 0.3) },
+      { label: "Conversion rate", value: "5.8%", delta: "+1.1%", kind: "spark", data: series(14, 0.3) },
+    ];
+  },
+  drawTile(tile, x, y, sw, sh, k, t, focus) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(k, k);
+    glass(0, 0, sw, sh, 22 * U, { glow: focus * 0.6, shadow: 0.6 + focus });
+    const pad = 26 * U;
+    txt(tile.label, pad, pad + 20 * U, { size: 20 * U, color: T.muted, weight: 500 });
+    const vs = Math.min(sh * 0.24, 64 * U);
+    txt(tile.value, pad, pad + 26 * U + vs, { size: vs, weight: 700, track: -0.02 * vs });
+    const vw = measure(tile.value, vs, 700, -0.02 * vs).width;
+    pill(tile.delta, pad + vw + 14 * U, pad + 26 * U + vs - 30 * U, { size: 16 * U, color: T.a1, fill: rgba(T.a1, 0.12), border: null });
+    const gx = pad, gy = sh * 0.64, gw = sw - pad * 2, gh = sh - gy - pad;
+    if (tile.kind === "spark") {
+      const d = tile.data, xs = d.map((_, i) => gx + gw * i / (d.length - 1)), ys = d.map(v => gy + gh * (1 - clamp(v)));
+      const pts = monotone(xs, ys, 10), L = lengths(pts);
+      const e = focus * env(t);
+      ctx.save();
+      ctx.lineJoin = ctx.lineCap = "round";
+      ctx.strokeStyle = tile.target ? T.a1 : rgba(T.ink, 0.45);
+      ctx.lineWidth = (2.5 + 1.2 * e * (0.5 + 0.5 * Math.sin(TAU * (t - MOVE) / 1.1))) * U;
+      if (tile.target) { ctx.shadowColor = rgba(T.a1, 0.4 + 0.4 * e); ctx.shadowBlur = 14 * U; }
+      strokePartial(pts, L, L[L.length - 1]);
+      ctx.restore();
+      if (e > 0) { const k2 = ((t - MOVE) / 2) % 1, p = pointAt(pts, L, L[L.length - 1] * k2); glowDot(p[0], p[1], 16 * U, T.a1, e * Math.sin(Math.PI * k2)); }
+    } else if (tile.kind === "bars") {
+      const n = tile.data.length, bw = gw / n * 0.55;
+      tile.data.forEach((v, i) => { const h = gh * clamp(v); rr(gx + gw * (i + 0.5) / n - bw / 2, gy + gh - h, bw, h, 4 * U); ctx.fillStyle = rgba(T.a2, 0.55); ctx.fill(); });
+    } else if (tile.kind === "ring") {
+      const rcx = sw - pad - gh * 0.9, rcy = sh * 0.5, rad = Math.min(sh * 0.3, 70 * U);
+      ctx.lineWidth = 10 * U; ctx.lineCap = "round";
+      ctx.strokeStyle = rgba(T.ink, 0.08); ctx.beginPath(); ctx.arc(rcx, rcy, rad, 0, TAU); ctx.stroke();
+      ctx.strokeStyle = T.a2; ctx.beginPath(); ctx.arc(rcx, rcy, rad, -Math.PI / 2, -Math.PI / 2 + TAU * tile.data[0]); ctx.stroke();
+    }
+    ctx.restore();
+  },
+  draw(t) {
+    const mx = Math.max(64 * U, W * 0.08), gap = 22 * U;
+    const areaTop = H * 0.22, areaBot = H - Math.max(64 * U, H * 0.07);
+    const sw = (W - mx * 2 - gap) / 2, sh = (areaBot - areaTop - gap * 2) / 3;
+    const slot = i => [mx + (i % 2) * (sw + gap), areaTop + Math.floor(i / 2) * (sh + gap)];
+
+    txt("Last 30 days".toUpperCase(), mx, H * 0.1, { size: 18 * U, color: T.a1, track: 2.5 * U });
+    txt(CONTENT.dashTitle, mx, H * 0.1 + 58 * U, { size: fitSize(CONTENT.dashTitle, W - mx * 2, 52 * U, 700), weight: 700, track: -1.2 * U });
+
+    const zoom = amt(t, 0.45, 0, MOVE - 0.45, 1.0);
+    const bIn = ease(clamp(t / 0.6)), bOut = ease(clamp((t - 7.4) / 0.5)), br = bIn * (1 - bOut);
+    let ti = 0;
+    this.tiles.forEach((tile, i) => { if (tile.target) { ti = i; return; } const [x, y] = slot(i); this.drawTile(tile, x, y, sw, sh, 1, t, 0); });
+    const [sx, sy] = slot(ti); this.drawTile(this.tiles[ti], sx, sy, sw, sh, 1, t, 0); // slot copy sits under the dim
+
+    ctx.fillStyle = rgba(T.ground, 0.62 * zoom); ctx.fillRect(0, 0, W, H);
+
+    const heroW = Math.min(W * 0.84, H * 0.62 * sw / sh), heroH = heroW * sh / sw;
+    const x = lerp(sx, CX - heroW / 2, zoom), y = lerp(sy, CY - heroH / 2 + H * 0.04, zoom);
+    const k = lerp(1, heroW / sw, zoom), w = sw * k, h = sh * k;
+    this.drawTile(this.tiles[ti], x, y, sw, sh, k, t, zoom);
+
+    if (br > 0.001) {
+      const pad = (14 + (1 - bIn) * 46) * U, len = 30 * U * k;
+      ctx.save(); ctx.globalAlpha = br; ctx.strokeStyle = T.a1; ctx.lineWidth = 3 * U; ctx.lineCap = "round";
+      ctx.shadowColor = rgba(T.a1, 0.6); ctx.shadowBlur = 12 * U;
+      const X0 = x - pad, Y0 = y - pad, X1 = x + w + pad, Y1 = y + h + pad;
+      [[X0, Y0, 1, 1], [X1, Y0, -1, 1], [X0, Y1, 1, -1], [X1, Y1, -1, -1]].forEach(([px, py, dx, dy]) => {
+        ctx.beginPath(); ctx.moveTo(px, py + len * dy); ctx.lineTo(px, py); ctx.lineTo(px + len * dx, py); ctx.stroke();
+      });
+      ctx.restore();
+    }
+  },
+};
+
+/* 07 · Spring stack: a deck fans out on a damped spring */
+EFFECTS["spring-stack"] = {
+  name: "07 · Spring Stack", numbers: false,
+  card(c, w, h) {
+    glass(-w / 2, -h, w, h, 28 * U, { shadow: 1.4 });
+    const pad = 34 * U, x0 = -w / 2 + pad, inner = w - pad * 2;
+    txt(c.no, x0, -h + pad + 20 * U, { size: 22 * U, color: T.a1, weight: 600, track: 2 * U });
+    ctx.beginPath(); ctx.arc(w / 2 - pad - 12 * U, -h + pad + 12 * U, 12 * U, 0, TAU); ctx.strokeStyle = rgba(T.ink, 0.25); ctx.lineWidth = 1.5 * U; ctx.stroke();
+    // Lay out bottom-up so tags, body and title never collide.
+    const tagSize = 16 * U, tagH = tagSize * 1.9, tagY = -pad - tagH;
+    let px = x0;
+    c.tags.forEach(tag => { px += pill(tag, px, tagY, { size: tagSize, color: T.ink, fill: rgba(T.ink, 0.05) }).w + 10 * U; });
+    const bs = 19 * U, lh = bs * 1.45, all = wrap(c.body, inner, bs, 400), lines = all.slice(0, 3);
+    if (all.length > 3) lines[2] = lines[2].replace(/[\s,.;:]*\S*$/, "") + "…";
+    const bodyBottom = tagY - 26 * U;
+    lines.forEach((l, i) => txt(l, x0, bodyBottom - (lines.length - 1 - i) * lh, { size: bs, color: T.muted, weight: 400 }));
+    const ts = fitSize(c.title, inner, 38 * U, 700, -0.02);
+    txt(c.title, x0, bodyBottom - (lines.length - 1) * lh - bs - 22 * U, { size: ts, weight: 700, track: -0.02 * ts });
+  },
+  draw(t) {
+    const cards = CONTENT.cards.slice(0, 3);
+    const w = Math.min(W * 0.28, H * 0.5 * 0.78), h = w * 1.3;
+    const baseY = CY + h / 2 + H * 0.03;
+    txt(CONTENT.stackKicker.toUpperCase(), CX, H * 0.1, { size: 20 * U, color: T.a1, align: "center", track: 3 * U });
+    // [dx, rotation°] fanned targets for the top, middle and bottom card
+    const fan = [[w * 0.94, 9], [-w * 0.94, -9], [0, 0]], rest = [[0, -1.5], [6 * U, 1.2], [-6 * U, 0.4]];
+    const delays = [0.15, 0.24, 0.33];
+    const e = env(t);
+    for (let i = cards.length - 1; i >= 0; i--) {
+      const s = spring(t - delays[i]) * (1 - ease(clamp((t - RET - 0.07 * (2 - i)) / (1.4 - 0.14))));
+      const float = Math.sin(TAU * (t - MOVE) / 2.2 + i * 1.7) * e;
+      const dx = lerp(rest[i][0], fan[i][0], s);
+      const rot = lerp(rest[i][1], fan[i][1], s) + float * 0.8;
+      const dy = -(2 - i) * 8 * U * (1 - s) + (i === 2 ? -H * 0.02 * s : 0) + float * 9 * U;
+      ctx.save(); ctx.translate(CX + dx, baseY + dy); ctx.rotate(rot * Math.PI / 180);
+      this.card(cards[i], w, h);
+      ctx.restore();
+    }
+  },
+};
+
+/* 09 · Masked kinetic type: liquid colour rises inside a wireframe word */
+EFFECTS["masked-type"] = {
+  name: "09 · Masked Kinetic Type", numbers: false,
+  init() { this.off = document.createElement("canvas"); this.off.width = W; this.off.height = H; },
+  draw(t) {
+    const word = CONTENT.heroWord, size = Math.min(fitSize(word, W * 0.84, 300 * U, 800, -0.04), H * 0.32);
+    const track = -0.04 * size, m = measure(word, size, 800, track);
+    const base = CY + size * 0.28, topY = base - m.actualBoundingBoxAscent, botY = base + m.actualBoundingBoxDescent;
+    const fill = amt(t, 0, 0.1, 2.0, 1.2);
+    const horizon = lerp(botY + 6 * U, topY - 10 * U, fill);
+    const wave = 10 * U * Math.sin(Math.PI * fill);
+    const ww = m.width;
+
+    // Paint the artwork first, then keep only the pixels inside the letters (destination-in).
+    const o = this.off, oc = o.getContext("2d");
+    oc.setTransform(1, 0, 0, 1, 0, 0); oc.globalCompositeOperation = "source-over"; oc.clearRect(0, 0, W, H);
+    oc.save();
+    oc.beginPath(); oc.moveTo(0, H);
+    for (let x = 0; x <= W; x += 12 * U) oc.lineTo(x, horizon + wave * Math.sin(x / (90 * U) + t * TAU / 4));
+    oc.lineTo(W, H); oc.closePath(); oc.clip();
+    const g = oc.createLinearGradient(0, botY, 0, topY);
+    g.addColorStop(0, T.a2); g.addColorStop(1, T.a1);
+    oc.fillStyle = g; oc.fillRect(0, 0, W, H);
+    // Drifting blobs give the fill a liquid feel; periods divide 8s so the loop is exact.
+    [[0.35, 1, 0.2, T.a1], [0.65, 2, 1.7, T.a2], [0.5, 1, 3.1, "#FFFFFF"]].forEach(([fx, k, ph, col], i) => {
+      const bx = CX + (fx - 0.5) * ww + Math.sin(TAU * t * k / DUR + ph) * ww * 0.18;
+      const by = lerp(topY, botY, 0.5) + Math.cos(TAU * t * k / DUR + ph) * size * 0.25;
+      const r = size * (i === 2 ? 0.45 : 0.8), rg = oc.createRadialGradient(bx, by, 0, bx, by, r);
+      rg.addColorStop(0, rgba(col, i === 2 ? 0.28 : 0.55)); rg.addColorStop(1, rgba(col, 0));
+      oc.fillStyle = rg; oc.fillRect(0, 0, W, H);
+    });
+    oc.restore();
+    // Hold: a refraction band sweeps the letters every 2.2s
+    const e = env(t);
+    if (e > 0) {
+      oc.globalCompositeOperation = "source-atop";
+      const k = ((t - MOVE) / 2.2) % 1, sx = lerp(CX - ww * 0.75, CX + ww * 0.75, ease(k));
+      const sg = oc.createLinearGradient(sx - size * 0.5, 0, sx + size * 0.5, 0);
+      sg.addColorStop(0, "rgba(255,255,255,0)"); sg.addColorStop(0.5, `rgba(255,255,255,${0.45 * e * Math.sin(Math.PI * k)})`); sg.addColorStop(1, "rgba(255,255,255,0)");
+      oc.fillStyle = sg; oc.fillRect(0, 0, W, H);
+    }
+    oc.globalCompositeOperation = "destination-in";
+    oc.font = font(size, 800); oc.letterSpacing = `${track}px`; oc.textAlign = "center"; oc.fillStyle = "#fff";
+    oc.fillText(word, CX, base);
+    oc.globalCompositeOperation = "source-over";
+    ctx.drawImage(o, 0, 0);
+
+    // Wireframe outline stays visible over the unfilled part
+    ctx.save(); ctx.font = font(size, 800); ctx.letterSpacing = `${track}px`; ctx.textAlign = "center";
+    ctx.lineWidth = 1.6 * U; ctx.strokeStyle = rgba(T.ink, 0.4); ctx.strokeText(word, CX, base); ctx.restore();
+
+    // Accent horizon line, visible only while the fill is moving
+    const ha = Math.sin(Math.PI * clamp(fill)) ** 0.6;
+    if (ha > 0.01) {
+      ctx.save(); ctx.globalAlpha = ha; ctx.strokeStyle = T.a1; ctx.lineWidth = 2 * U; ctx.shadowColor = rgba(T.a1, 0.8); ctx.shadowBlur = 14 * U;
+      ctx.beginPath(); ctx.moveTo(CX - ww / 2 - 40 * U, horizon); ctx.lineTo(CX + ww / 2 + 40 * U, horizon); ctx.stroke(); ctx.restore();
+    }
+
+    // Subtitle slides up through an invisible mask
+    const s = amt(t, 0.5, 0, MOVE - 0.5, 0.9);
+    const ss = fitSize(CONTENT.subtitle, W * 0.8, 44 * U, 500), sy = botY + ss * 2.4;
+    ctx.save(); ctx.beginPath(); ctx.rect(0, sy - ss * 1.15, W, ss * 1.5); ctx.clip();
+    txt(CONTENT.subtitle, CX, sy + (1 - s) * ss * 1.4, { size: ss, weight: 500, color: T.muted, align: "center", track: -0.01 * ss });
+    ctx.restore();
+  },
+};
+
+/* 12 · Shutter slats: seven architectural slats collapse to reveal the hero */
+EFFECTS["shutter-slats"] = {
+  name: "12 · Shutter Slats", numbers: false, needsImage: true,
+  async init() {
+    const hero = document.createElement("canvas"); hero.width = W; hero.height = H;
+    const h = hero.getContext("2d"), M = Math.min(W, H);
+    let img = null;
+    if (CONTENT.image) {
+      img = new Image(); img.crossOrigin = "anonymous"; img.src = CONTENT.image;
+      try { await img.decode(); } catch { img = null; }
+    }
+    if (img) {
+      const s = Math.max(W / img.width, H / img.height);
+      h.drawImage(img, (W - img.width * s) / 2, (H - img.height * s) / 2, img.width * s, img.height * s);
+    } else {
+      const bg = h.createLinearGradient(0, 0, W, H); bg.addColorStop(0, T.ground); bg.addColorStop(1, T.surface2);
+      h.fillStyle = bg; h.fillRect(0, 0, W, H);
+      const orb = (x, y, r, col, a) => { const g = h.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, rgba(col, a)); g.addColorStop(1, rgba(col, 0)); h.fillStyle = g; h.fillRect(0, 0, W, H); };
+      orb(W * 0.7, H * 0.32, M * 0.6, T.a2, 0.55); orb(W * 0.28, H * 0.78, M * 0.45, T.a1, 0.22);
+      h.strokeStyle = rgba(T.ink, 0.07); h.lineWidth = Math.max(1, U);
+      for (let i = 1; i <= 5; i++) { h.beginPath(); h.arc(CX, CY - H * 0.05, M * 0.12 * i, 0, TAU); h.stroke(); }
+      drawLogo(h, CX, CY - H * 0.06, M * 0.3);
+      h.font = font(64 * U, 700); h.letterSpacing = `${-1.5 * U}px`; h.textAlign = "center"; h.fillStyle = T.ink;
+      h.fillText(CONTENT.brand, CX, CY + M * 0.2);
+      h.font = font(26 * U, 500); h.letterSpacing = "0px"; h.fillStyle = T.muted;
+      h.fillText(CONTENT.tagline, CX, CY + M * 0.2 + 52 * U);
+    }
+    this.hero = hero;
+  },
+  draw(t) {
+    const zoom = lerp(1.06, 1, amt(t, 0.2, 0));
+    ctx.save(); ctx.translate(CX, CY); ctx.scale(zoom, zoom); ctx.translate(-CX, -CY);
+    ctx.drawImage(this.hero, 0, 0);
+    ctx.restore();
+    // Hold: a slow key-light sweep across the image
+    const e = env(t);
+    if (e > 0) {
+      const k = (t - MOVE) / (RET - MOVE), sx = lerp(-W * 0.4, W * 1.4, k);
+      ctx.save(); ctx.globalCompositeOperation = "screen";
+      const g = ctx.createLinearGradient(sx - W * 0.25, 0, sx + W * 0.25, H * 0.35);
+      g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.5, `rgba(255,255,255,${0.14 * e})`); g.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); ctx.restore();
+    }
+    pill(CONTENT.badge, 56 * U, 56 * U, { size: 20 * U, color: T.ground, fill: T.a1, border: null, weight: 700, alpha: amt(t, 1.2, 0, 1.0, 0.6) });
+
+    const n = 7, sw = W / n;
+    for (let i = 0; i < n; i++) {
+      const c = amt(t, i * 0.11, i * 0.1, MOVE - 0.66 - 0.2, 0.8);
+      const w = (sw + 1) * (1 - c);
+      if (w < 0.5) continue;
+      const x = sw * (i + 0.5) - w / 2;
+      const g = ctx.createLinearGradient(x, 0, x + w, 0);
+      g.addColorStop(0, T.surface2); g.addColorStop(0.5, T.surface); g.addColorStop(1, T.ground);
+      ctx.fillStyle = g; ctx.fillRect(x, 0, w, H);
+      const edge = ctx.createLinearGradient(0, 0, 0, H);
+      edge.addColorStop(0, "rgba(255,255,255,0.04)"); edge.addColorStop(0.45, "rgba(255,255,255,0.32)"); edge.addColorStop(1, "rgba(255,255,255,0.04)");
+      ctx.fillStyle = edge; ctx.fillRect(x, 0, Math.max(1, U), H); ctx.fillRect(x + w - Math.max(1, U), 0, Math.max(1, U), H);
+    }
+  },
+};
+
+/* 15 · Flowing paths: energy pulses travel source → channels → output */
+EFFECTS["flowing-paths"] = {
+  name: "15 · Flowing Paths", numbers: false,
+  init() {
+    const portrait = H > W * 1.1, spread = portrait ? H * 0.2 : H * 0.25;
+    const nw = 190 * U, nh = 72 * U;
+    this.nodes = {
+      src: { x: W * 0.15, y: CY, w: nw, h: nh * 1.15, label: CONTENT.source },
+      out: { x: W * 0.85, y: CY, w: nw, h: nh * 1.15, label: CONTENT.output },
+      ch: CONTENT.channels.slice(0, 3).map((label, j) => ({ x: CX, y: CY + (j - 1) * spread, w: nw, h: nh, label })),
+    };
+    const bez = (a, b) => {
+      const p0 = [a.x + a.w / 2, a.y], p3 = [b.x - b.w / 2, b.y], dx = (p3[0] - p0[0]) * 0.55;
+      const p1 = [p0[0] + dx, p0[1]], p2 = [p3[0] - dx, p3[1]], pts = [];
+      for (let i = 0; i <= 60; i++) {
+        const s = i / 60, q = 1 - s;
+        pts.push([q * q * q * p0[0] + 3 * q * q * s * p1[0] + 3 * q * s * s * p2[0] + s * s * s * p3[0], q * q * q * p0[1] + 3 * q * q * s * p1[1] + 3 * q * s * s * p2[1] + s * s * s * p3[1]]);
+      }
+      return { pts, L: lengths(pts) };
+    };
+    const { src, out, ch } = this.nodes;
+    this.paths = ch.flatMap(c => [bez(src, c), bez(c, out)]);
+    // Wave 1 during the move, then three waves through the hold. All finish before 7.1s.
+    this.pulses = []; this.rings = [];
+    [0.2, 2.6, 3.7, 4.8].forEach(ws => {
+      this.rings.push({ node: src, at: ws });
+      ch.forEach((c, j) => {
+        const a = ws + 0.1 * j;
+        this.pulses.push({ path: this.paths[j * 2], start: a, dur: 0.7 });
+        this.pulses.push({ path: this.paths[j * 2 + 1], start: a + 0.7, dur: 0.7 });
+        this.rings.push({ node: c, at: a + 0.7 });
+        this.rings.push({ node: out, at: a + 1.4 });
+      });
+    });
+  },
+  draw(t) {
+    const { src, out, ch } = this.nodes, g = amt(t);
+    txt("SOURCE", src.x, src.y - src.h / 2 - 26 * U, { size: 16 * U, color: T.muted, align: "center", track: 3 * U });
+    txt("CHANNELS", ch[0].x, ch[0].y - ch[0].h / 2 - 26 * U, { size: 16 * U, color: T.muted, align: "center", track: 3 * U });
+    txt("OUTPUT", out.x, out.y - out.h / 2 - 26 * U, { size: 16 * U, color: T.muted, align: "center", track: 3 * U });
+
+    ctx.save(); ctx.lineCap = "round";
+    this.paths.forEach(p => {
+      ctx.strokeStyle = rgba(T.ink, 0.12); ctx.lineWidth = 2 * U; strokePartial(p.pts, p.L, p.L[p.L.length - 1]);
+      ctx.strokeStyle = rgba(T.a1, 0.32 * g); ctx.lineWidth = 2 * U; ctx.shadowColor = rgba(T.a1, 0.5 * g); ctx.shadowBlur = 10 * U;
+      strokePartial(p.pts, p.L, p.L[p.L.length - 1]); ctx.shadowColor = "transparent";
+    });
+    ctx.restore();
+
+    // Pulses with a tapered trail
+    ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.lineCap = "round";
+    this.pulses.forEach(p => {
+      const k = (t - p.start) / p.dur;
+      if (k < 0 || k > 1) return;
+      const total = p.path.L[p.path.L.length - 1], head = total * smooth(k), trail = total * 0.28;
+      for (let s = 0; s < 8; s++) {
+        const d0 = head - trail * (s + 1) / 8, d1 = head - trail * s / 8;
+        if (d1 <= 0) continue;
+        const a = pointAt(p.path.pts, p.path.L, Math.max(0, d0)), b = pointAt(p.path.pts, p.path.L, d1);
+        ctx.strokeStyle = rgba(T.a1, 0.75 * (1 - s / 8)); ctx.lineWidth = (5 - s * 0.5) * U;
+        ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+      }
+      const hp = pointAt(p.path.pts, p.path.L, head);
+      glowDot(hp[0], hp[1], 20 * U, T.a1, 0.9);
+    });
+    ctx.restore();
+
+    // Nodes and their shockwave rings
+    const nodes = [src, ...ch, out];
+    nodes.forEach(nd => {
+      let flash = 0;
+      this.rings.forEach(r => {
+        if (r.node !== nd) return;
+        const a = (t - r.at) / 0.7;
+        if (a < 0 || a > 1) return;
+        flash = Math.max(flash, 1 - a);
+        const grow = ease(a) * 46 * U;
+        ctx.save(); ctx.strokeStyle = rgba(T.a1, 0.6 * (1 - a)); ctx.lineWidth = 2 * U;
+        rr(nd.x - nd.w / 2 - grow, nd.y - nd.h / 2 - grow, nd.w + grow * 2, nd.h + grow * 2, nd.h / 2 + grow); ctx.stroke(); ctx.restore();
+      });
+      glass(nd.x - nd.w / 2, nd.y - nd.h / 2, nd.w, nd.h, nd.h / 2, { glow: Math.max(0.25 * g, flash), shadow: 0.7 });
+      ctx.beginPath(); ctx.arc(nd.x - nd.w / 2 + 30 * U, nd.y, 6 * U, 0, TAU); ctx.fillStyle = mix(T.muted, T.a1, Math.max(g, flash)); ctx.fill();
+      txt(nd.label, nd.x + 12 * U, nd.y, { size: fitSize(nd.label, nd.w - 80 * U, 26 * U, 600), weight: 600, align: "center", base: "middle" });
+    });
+  },
+};
+
+/* 16 · Particle logo assembly: dust spirals in to form the mark */
+EFFECTS["particle-logo"] = {
+  name: "16 · Particle Logo Assembly", numbers: false,
+  init() {
+    const M = Math.min(W, H);
+    this.size = M * 0.36; this.lx = CX; this.ly = CY - H * 0.07;
+    const off = document.createElement("canvas"); off.width = W; off.height = H;
+    const oc = off.getContext("2d"); drawLogo(oc, this.lx, this.ly, this.size);
+    const data = oc.getImageData(0, 0, W, H).data, step = Math.max(4, Math.round(5 * U)), r = rng(1337);
+    const a1 = rgb(T.a1), a2 = rgb(T.a2);
+    this.parts = [];
+    for (let y = 0; y < H; y += step) for (let x = 0; x < W; x += step) {
+      const i = (y * W + x) * 4;
+      if (data[i + 3] < 140) continue;
+      const d1 = Math.abs(data[i] - a1[0]) + Math.abs(data[i + 1] - a1[1]) + Math.abs(data[i + 2] - a1[2]);
+      const d2 = Math.abs(data[i] - a2[0]) + Math.abs(data[i + 1] - a2[1]) + Math.abs(data[i + 2] - a2[2]);
+      const ox = lerp(-0.1, 1.1, r()) * W, oy = lerp(-0.1, 1.1, r()) * H;
+      const ang = (r() < 0.5 ? 1 : -1) * lerp(1.2, 2.0, r()), vx = ox - CX, vy = oy - CY;
+      this.parts.push({
+        tx: x + (r() - 0.5) * step * 0.6, ty: y + (r() - 0.5) * step * 0.6, ox, oy,
+        cx: CX + (vx * Math.cos(ang) - vy * Math.sin(ang)) * 0.55, cy: CY + (vx * Math.sin(ang) + vy * Math.cos(ang)) * 0.55,
+        dIn: r() * 0.5, dOut: r() * 0.35, ph: r() * TAU, k: r() < 0.5 ? 1 : 2,
+        col: d1 <= d2 ? T.a1 : T.a2, sz: lerp(1.6, 2.8, r()) * U,
+      });
+    }
+    this.clip = logoClip(this.lx, this.ly, this.size);
+  },
+  draw(t) {
+    const solid = amt(t, 1.75, 0, 0.45, 0.35);
+    const pos = (p, e) => { const q = 1 - e; return [q * q * p.ox + 2 * q * e * p.cx + e * e * p.tx, q * q * p.oy + 2 * q * e * p.cy + e * e * p.ty]; };
+    ctx.save(); ctx.lineCap = "round";
+    for (const p of this.parts) {
+      const e = amt(t, p.dIn, p.dOut, 1.7, 1.0);
+      const drift = (1 - e) * 7 * U, [x, y] = pos(p, e);
+      const X = x + Math.sin(TAU * p.k * t / DUR + p.ph) * drift, Y = y + Math.cos(TAU * p.k * t / DUR + p.ph) * drift;
+      const moving = e > 0.02 && e < 0.97;
+      if (moving) {
+        const [px, py] = pos(p, Math.max(0, e - 0.06));
+        ctx.strokeStyle = rgba(p.col, 0.2); ctx.lineWidth = p.sz * 0.5;
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(X, Y); ctx.stroke();
+      }
+      ctx.fillStyle = mix(T.ink, p.col, 0.35 + 0.65 * e, (0.55 + 0.45 * e) * (1 - 0.65 * solid));
+      ctx.fillRect(X - p.sz / 2, Y - p.sz / 2, p.sz, p.sz);
+    }
+    ctx.restore();
+    if (solid > 0.001) {
+      drawLogo(ctx, this.lx, this.ly, this.size, solid);
+      const e = env(t);
+      if (e > 0) {   // Hold: an internal gleam crosses the mark every 2.2s
+        const k = ((t - MOVE) / 2.2) % 1, sx = lerp(this.lx - this.size, this.lx + this.size, ease(k));
+        ctx.save(); ctx.clip(this.clip); ctx.globalCompositeOperation = "lighter";
+        const g = ctx.createLinearGradient(sx - this.size * 0.25, this.ly - this.size, sx + this.size * 0.25, this.ly + this.size);
+        g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(0.5, `rgba(255,255,255,${0.5 * e * Math.sin(Math.PI * k)})`); g.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); ctx.restore();
+      }
+    }
+    const b = amt(t, 1.3, 0, 0.9, 0.5), tg = amt(t, 1.5, 0, 0.7, 0.45);
+    const by = this.ly + this.size * 0.5 + 110 * U, bs = fitSize(CONTENT.brand, W * 0.84, 68 * U, 700, -0.025);
+    txt(CONTENT.brand, CX, by + (1 - b) * 24 * U, { size: bs, weight: 700, align: "center", alpha: b, track: -0.025 * bs });
+    txt(CONTENT.tagline, CX, by + 58 * U + (1 - tg) * 18 * U, { size: fitSize(CONTENT.tagline, W * 0.84, 26 * U, 500), weight: 500, color: T.muted, align: "center", alpha: tg, track: 0.5 * U });
+  },
+};
+
+/* 02 · Search → results: a pill expands, a query lands, three answers rise */
+EFFECTS["search-results"] = {
+  name: "02 · Search → Results", numbers: true,
+  draw(t) {
+    const fullW = Math.min(W * 0.84, 1120 * U), pillH = 92 * U, cardH = 140 * U, gap = 18 * U;
+    const res = CONTENT.results.slice(0, 3);
+    const blockH = pillH + 36 * U + res.length * cardH + (res.length - 1) * gap;
+    const top = (H - blockH) / 2 + H * 0.02;
+    const grow = ease(clamp(t / 0.5)) * (1 - ease(clamp((t - 7.4) / 0.6)));
+    const pw = lerp(W * 0.36, fullW, grow), px = CX - pw / 2;
+
+    txt("ASK ANYTHING", CX, top - 46 * U, { size: 18 * U, color: T.a1, align: "center", track: 3 * U });
+    glass(px, top, pw, pillH, pillH / 2, { glow: 0.25 + 0.35 * grow, shadow: 0.8 });
+    // magnifier
+    const ix = px + 46 * U, iy = top + pillH / 2;
+    ctx.save(); ctx.strokeStyle = T.muted; ctx.lineWidth = 3 * U; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.arc(ix - 3 * U, iy - 3 * U, 12 * U, 0, TAU); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ix + 6 * U, iy + 6 * U); ctx.lineTo(ix + 14 * U, iy + 14 * U); ctx.stroke(); ctx.restore();
+
+    const q = CONTENT.query, typeIn = clamp((t - 0.45) / 0.75), del = clamp((t - 6.75) / 0.6);
+    const n = Math.round(q.length * typeIn * (1 - del)), shown = q.slice(0, n);
+    const qs = fitSize(q, pw - 160 * U, 32 * U, 500), tx = px + 84 * U;
+    ctx.save(); ctx.beginPath(); ctx.rect(px + 70 * U, top, pw - 100 * U, pillH); ctx.clip();
+    if (n === 0) txt("Search…", tx, iy, { size: qs, color: T.muted, base: "middle", weight: 500 });
+    else txt(shown, tx, iy, { size: qs, base: "middle", weight: 500 });
+    if (Math.floor(t * 2.5) % 2 === 0 || (typeIn > 0 && typeIn < 1)) {
+      const cw = n ? measure(shown, qs, 500).width : 0;
+      ctx.fillStyle = T.a1; ctx.fillRect(tx + cw + 3 * U, iy - qs * 0.6, 2.5 * U, qs * 1.2);
+    }
+    ctx.restore();
+    pill("Enter", px + pw - 26 * U, iy - 17 * U, { size: 15 * U, align: "right", color: T.muted, fill: rgba(T.ink, 0.04), alpha: grow });
+
+    const hover = smooth(clamp((t - 2.5) / 0.4)) * smooth(clamp((6.4 - t) / 0.35));
+    res.forEach((r, i) => {
+      const rin = ease(clamp((t - 1.2 - 0.15 * i) / 0.75)), rout = ease(clamp((t - RET - 0.08 * i) / 0.6));
+      const a = rin * (1 - rout);
+      if (a < 0.002) return;
+      const lift = i === 0 ? hover * 5 * U : 0;
+      const x = CX - fullW / 2, y = top + pillH + 36 * U + i * (cardH + gap) + (1 - rin) * 44 * U + rout * 70 * U - lift;
+      ctx.save(); ctx.globalAlpha = a;
+      glass(x, y, fullW, cardH, 24 * U, { glow: i === 0 ? hover : 0, shadow: 0.7 });
+      const pad = 30 * U, ic = 64 * U;
+      rr(x + pad, y + (cardH - ic) / 2, ic, ic, 16 * U); ctx.fillStyle = rgba(T.a2, 0.18); ctx.fill();
+      txt(String(i + 1).padStart(2, "0"), x + pad + ic / 2, y + cardH / 2, { size: 22 * U, color: T.a2, align: "center", base: "middle", weight: 700 });
+      const mw = Math.max(measure(r.metric, 44 * U, 700).width, measure(r.unit, 17 * U, 500).width);
+      const ts = fitSize(r.title, fullW - ic - mw - pad * 4, 30 * U, 600);
+      txt(r.title, x + pad * 2 + ic - 6 * U, y + cardH / 2 - 6 * U, { size: ts, weight: 600 });
+      txt(r.sub, x + pad * 2 + ic - 6 * U, y + cardH / 2 + 28 * U, { size: 19 * U, color: T.muted, weight: 500 });
+      txt(r.metric, x + fullW - pad, y + cardH / 2 + 8 * U, { size: 44 * U, weight: 700, color: T.a1, align: "right", track: -U });
+      txt(r.unit, x + fullW - pad, y + cardH / 2 + 34 * U, { size: 17 * U, color: T.muted, align: "right", weight: 500 });
+      ctx.restore();
+    });
+    if (hover > 0.01) {   // pointer resting on the first result
+      const y0 = top + pillH + 36 * U - hover * 5 * U, ax = CX + fullW * 0.18, ay = y0 + cardH * 0.62;
+      ctx.save(); ctx.globalAlpha = hover; ctx.translate(ax, ay); ctx.scale(U, U);
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, 30); ctx.lineTo(8, 23); ctx.lineTo(14, 36); ctx.lineTo(19, 34); ctx.lineTo(13, 21); ctx.lineTo(23, 21); ctx.closePath();
+      ctx.fillStyle = T.ink; ctx.fill(); ctx.strokeStyle = T.ground; ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
+    }
+  },
+};
+
+/* ═════════════════════════ Runtime ═════════════════════════ */
+let current = null, currentKey = "", readyPromise = Promise.resolve();
+
+async function select(key, size, brand) {
+  if (!EFFECTS[key]) key = "chart-morph";
+  setup(size, brand);
+  const fx = EFFECTS[key];
+  readyPromise = (async () => {
+    await document.fonts.ready;
+    if (fx.init) await fx.init();
+    currentKey = key; current = fx;   // swap only once the effect is ready to draw
+  })();
+  await readyPromise;
+  window.motionInfo = { duration: DUR, width: W, height: H, effect: key, effects: Object.keys(EFFECTS), brand: brand || "alphastrix" };
+}
+
+function renderFrame(t) {
+  t = ((t % DUR) + DUR) % DUR;
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over";
+  background();
+  ctx.save(); current.draw(t); ctx.restore();
+  if (current.numbers && !VERIFIED) illustrativeTag();
+  grain();
+  ctx.restore();
+}
+
+// Deterministic clock: any frame from time alone.
+window.seek = async seconds => { await readyPromise; renderFrame(+seconds || 0); return seconds; };
+
+function fitCanvas() {
+  if (RENDER) { canvas.style.width = W + "px"; canvas.style.height = H + "px"; return; }
+  const stage = document.getElementById("stage").getBoundingClientRect();
+  const s = Math.min((stage.width - 32) / W, (stage.height - 32) / H, 1);
+  canvas.style.width = Math.max(1, W * s) + "px"; canvas.style.height = Math.max(1, H * s) + "px";
+}
+addEventListener("resize", fitCanvas);
+
+(async () => {
+  const key = Q.get("effect") || "chart-morph", size = Q.get("size") || "1080x1080", brand = Q.get("brand") || "alphastrix";
+  if (RENDER) document.body.classList.add("render");
+  await select(key, size, brand);
+
+  if (RENDER) { renderFrame(+Q.get("t") || 0); window.__motionReady = true; return; }
+
+  // ── Preview UI ──
+  const $ = id => document.getElementById(id);
+  const effectSel = $("effectSel"), sizeSel = $("sizeSel"), brandSel = $("brandSel"), scrub = $("scrub");
+  for (const [k, fx] of Object.entries(EFFECTS)) effectSel.add(new Option(fx.name, k));
+  effectSel.value = currentKey; sizeSel.value = `${W}x${H}`; brandSel.value = brand in THEMES ? brand : "alphastrix";
+
+  let playing = !Q.has("t"), t = +Q.get("t") || 0, last = performance.now();
+  const setPlaying = p => { playing = p; $("play").textContent = p ? "Pause" : "Play"; last = performance.now(); };
+  setPlaying(playing);
+  const syncURL = () => {
+    const p = new URLSearchParams(location.search);
+    p.set("effect", effectSel.value); p.set("size", sizeSel.value); p.set("brand", brandSel.value);
+    history.replaceState(null, "", "?" + p.toString());
+  };
+  const reselect = async () => { syncURL(); await select(effectSel.value, sizeSel.value, brandSel.value); };
+  effectSel.onchange = reselect; sizeSel.onchange = reselect; brandSel.onchange = reselect;
+  $("play").onclick = () => setPlaying(!playing);
+  $("audit").onclick = () => { setPlaying(false); t = 4.4; };
+  scrub.oninput = () => { setPlaying(false); t = +scrub.value; };
+  $("png").onclick = () => canvas.toBlob(b => {
+    const a = document.createElement("a"); a.href = URL.createObjectURL(b);
+    a.download = `${currentKey}-${t.toFixed(2)}s.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+  addEventListener("keydown", e => {
+    if (e.target.tagName === "SELECT") return;
+    if (e.code === "Space") { e.preventDefault(); setPlaying(!playing); }
+    if (e.code === "ArrowRight") { setPlaying(false); t = (t + 1 / 30) % DUR; }
+    if (e.code === "ArrowLeft") { setPlaying(false); t = (t - 1 / 30 + DUR) % DUR; }
+  });
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+  if (reduce.matches && !Q.has("t")) { setPlaying(false); t = 4.4; }
+
+  const loop = now => {
+    if (playing) t = (t + (now - last) / 1000) % DUR;
+    last = now;
+    renderFrame(t);
+    scrub.value = t.toFixed(3);
+    $("time").textContent = `${t.toFixed(2)}s / 8.00s`;
+    $("phase").textContent = t < MOVE ? "move" : t < RET ? "hold" : "return";
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
