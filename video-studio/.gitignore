@@ -1,0 +1,24 @@
+node_modules
+dist
+.DS_Store
+.env
+__pycache__
+
+# Renders
+out
+
+# Your videos, the frames pulled from them, and measurement scratch files
+input/*
+work
+public/footage/*
+public/refs/*
+public/audio/*
+
+# Candidate fonts downloaded for scoring. The winner is copied to public/fonts/.
+fonts/*
+
+# Whisper.cpp build and models, fetched by scripts/transcribe.mjs
+whisper.cpp
+
+# Keep the empty folders
+!**/.gitkeep

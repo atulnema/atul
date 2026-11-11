@@ -1,0 +1,20 @@
+/**
+ * Note: When using the Node.JS APIs, the config file
+ * doesn't apply. Instead, pass options directly to the APIs.
+ *
+ * All configuration options: https://remotion.dev/docs/config
+ */
+
+import { Config } from "@remotion/cli/config";
+
+Config.setRspack(true);
+Config.setVideoImageFormat("jpeg");
+Config.setOverwriteOutput(true);
+Config.setDefaultPremountInSeconds(2);
+
+// Remotion downloads its own headless browser on first render. Where that download is
+// blocked (cloud sandboxes), point REMOTION_BROWSER at an installed Chrome instead:
+//   REMOTION_BROWSER=/opt/pw-browsers/chromium npm run board
+if (process.env.REMOTION_BROWSER) {
+  Config.setBrowserExecutable(process.env.REMOTION_BROWSER);
+}

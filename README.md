@@ -46,3 +46,7 @@ app/          layout, page, global styles, favicon
 components/   one file per section, plus shared UI primitives in ui.tsx
 lib/site.ts   site content
 ```
+
+## Video studio
+
+`video-studio/` is a separate project for making short-form video: it measures the editing style of a reference reel, rebuilds it in Remotion, and edits your own clip in that style. It has its own `package.json` and is excluded from the website's type-check and build. See [video-studio/README.md](video-studio/README.md).
