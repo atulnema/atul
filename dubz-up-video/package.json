@@ -1,0 +1,45 @@
+{
+  "name": "dubz-up-video",
+  "version": "1.0.0",
+  "description": "Dubz Up pitch film: a 32 second motion graphics piece built with Remotion",
+  "repository": {},
+  "license": "UNLICENSED",
+  "engines": {
+    "node": "^20.19.0 || ^22.13.0 || >=24"
+  },
+  "private": true,
+  "dependencies": {
+    "@fontsource/bricolage-grotesque": "^5.3.0",
+    "@fontsource/dm-sans": "^5.3.0",
+    "@fontsource/noto-sans-arabic": "^5.3.0",
+    "@fontsource/noto-sans-devanagari": "^5.3.0",
+    "@fontsource/noto-sans-jp": "^5.3.1",
+    "@fontsource/noto-sans-kr": "^5.3.1",
+    "@fontsource/noto-sans-sc": "^5.3.1",
+    "@remotion/cli": "4.0.543",
+    "@remotion/media": "4.0.543",
+    "@remotion/transitions": "4.0.543",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "remotion": "4.0.543"
+  },
+  "devDependencies": {
+    "@remotion/eslint-config-flat": "4.0.543",
+    "@types/react": "19.3.0",
+    "@types/web": "0.0.166",
+    "eslint": "10.12.0",
+    "prettier": "3.8.1",
+    "typescript": "5.9.3"
+  },
+  "scripts": {
+    "audio": "node scripts/make-audio.mjs",
+    "dev": "npm run audio && remotion studio",
+    "render": "npm run audio && remotion render DubzUpPitch out/dubz-up-pitch.mp4 --crf=16",
+    "build": "remotion bundle",
+    "upgrade": "remotion upgrade",
+    "lint": "eslint src && tsc"
+  },
+  "allowScripts": {
+    "esbuild": false
+  }
+}
