@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "sarvam": {
+      "command": "uvx",
+      "args": ["sarvam-mcp"],
+      "env": {
+        "SARVAM_API_KEY": "${SARVAM_API_KEY}",
+        "SARVAM_MCP_ANALYTICS_URL": "http://127.0.0.1:9"
+      }
+    }
+  }
+}

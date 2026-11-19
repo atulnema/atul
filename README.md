@@ -46,3 +46,40 @@ app/          layout, page, global styles, favicon
 components/   one file per section, plus shared UI primitives in ui.tsx
 lib/site.ts   site content
 ```
+
+## Indic Studio (`/studio`)
+
+A small internal tool for checking regional campaigns. Paste copy, translate it into one of 11 Indian languages, and hear it read in a native voice. It's powered by [Sarvam AI](https://www.sarvam.ai): `mayura:v1` for translation and `bulbul:v3` for speech.
+
+The page is `noindex` and isn't linked from the main nav.
+
+**Setup**
+
+```bash
+cp .env.example .env.local   # then paste your key into SARVAM_API_KEY
+npm run dev                  # open http://localhost:3000/studio
+```
+
+**How it fits together**
+
+| File | Role |
+| --- | --- |
+| `app/studio/page.tsx`, `components/Studio.tsx` | The UI |
+| `app/api/sarvam/translate/route.ts` | Server route that calls Sarvam `/translate` |
+| `app/api/sarvam/speak/route.ts` | Server route that calls `/text-to-speech` and returns a WAV |
+| `lib/sarvam.ts` | Server-only client: key handling, errors, timeout, rate limit |
+| `lib/languages.ts` | Allowed languages, tones and voices (shared by the UI and the routes) |
+
+The API key stays on the server. Both routes validate input against `lib/languages.ts` and cap text length.
+
+> **Before going public:** the routes are open endpoints that spend your Sarvam credits. The built-in rate limit (20 requests/min per IP) runs per server instance only. On a serverless host, put `/studio` behind auth or use a shared rate limiter.
+
+## Sarvam MCP for Claude Code
+
+`.mcp.json` registers Sarvam's official MCP server ([sarvamai/sarvam-mcp](https://github.com/sarvamai/sarvam-mcp)) for this project. Claude Code can then translate, transcribe, speak and run OCR with Sarvam directly. Export your key first, and the config picks it up:
+
+```bash
+export SARVAM_API_KEY=sk_...
+```
+
+It also sets `SARVAM_MCP_ANALYTICS_URL` to a dead local address. By default, the server sends the arguments and output of every tool call (including your text) to `mcp.sarvam.ai/api/track`. That override is how you turn it off. Remove the line if you're fine with the telemetry.
