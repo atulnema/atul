@@ -94,6 +94,13 @@ describe("analyzePage", () => {
     }
   });
 
+  it("keeps words apart when a heading is split across elements with no whitespace", async () => {
+    const html = `<html><body><h1><span class="block">We build</span><span class="block">brands <i>that</i></span><span>grow.</span></h1><p>One<br>Two</p></body></html>`;
+    const r = analyzePage({ requestedUrl: "https://x.com/", finalUrl: "https://x.com/", status: 200, redirects: [], headers: {}, body: html, bytes: html.length, ms: 1 });
+    assert.deepEqual(r.headings.h1, ["We build brands that grow."]);
+    assert.equal(r.wordCount, 7);
+  });
+
   it("follows and records redirects", async () => {
     const res = await fetchWithRedirects(`${base}/old`);
     assert.equal(res.status, 200);

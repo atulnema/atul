@@ -67,6 +67,12 @@ export function analyzePage(res: FetchResult, opts: { includeText?: boolean; max
   const viewport = $('meta[name="viewport" i]').attr("content") ?? null;
   const lang = $("html").attr("lang") ?? null;
 
+  // Element boundaries often carry no whitespace in the HTML (e.g. a headline split into
+  // block <span>s). Browsers render them apart, so add a space after each element before
+  // reading text; clean() collapses any doubles.
+  $("br").replaceWith(" ");
+  $("body *").after(" ");
+
   // Headings
   const h1 = $("h1").map((_, el) => clean($(el).text())).get().filter(Boolean);
   const outline = $("h1, h2, h3")
