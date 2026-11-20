@@ -39,10 +39,15 @@ All copy lives in `lib/site.ts`: nav, services, process, stats, case studies, te
 
 The contact form has no backend. It opens the visitor's email client with the enquiry filled in. To collect submissions directly, point `onSubmit` in `components/Contact.tsx` at a form service or an API route.
 
+## SEO agent
+
+`seo-agent/` holds an internal command-line agent for client SEO work: audits, keyword research, content writing and competitor comparison. It is a separate package with its own dependencies and does not affect the website build. See [`seo-agent/README.md`](seo-agent/README.md).
+
 ## Structure
 
 ```
 app/          layout, page, global styles, favicon
 components/   one file per section, plus shared UI primitives in ui.tsx
 lib/site.ts   site content
+seo-agent/    internal SEO agent (separate package)
 ```

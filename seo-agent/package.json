@@ -1,0 +1,25 @@
+{
+  "name": "alphastrix-seo-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Internal SEO agent for Alphastrix Digital: audits, keyword research, content writing and competitor comparison.",
+  "bin": {
+    "seo-agent": "./src/cli.ts"
+  },
+  "scripts": {
+    "seo": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.11.0",
+    "cheerio": "^1.2.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
