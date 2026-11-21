@@ -1,0 +1,321 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  :root{
+    --bg:#0A0C11; --panel:#12161F; --panel2:#181D29; --line:#252B3A;
+    --text:#EEF1F7; --muted:#8C94A8; --accent:#7C6CFF; --accent2:#2FD4B5;
+    --red:#FF6B6B; --green:#3DDC84; --amber:#FFB547;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1920px;height:1080px;overflow:hidden;background:var(--bg)}
+  body{font-family:'Inter',sans-serif;color:var(--text);-webkit-font-smoothing:antialiased}
+  .mono{font-family:'JetBrains Mono',monospace}
+  #stage{position:absolute;inset:0;overflow:hidden}
+  .glow{position:absolute;border-radius:50%;filter:blur(120px);opacity:.35}
+  #g1{width:900px;height:900px;background:#4B3BFF;left:-250px;top:-300px}
+  #g2{width:800px;height:800px;background:#0FA88E;right:-250px;bottom:-350px;opacity:.25}
+  .grid{position:absolute;inset:0;
+    background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+    background-size:64px 64px;mask-image:radial-gradient(ellipse at center,#000 30%,transparent 75%)}
+  .scene{position:absolute;inset:0;opacity:0}
+
+  /* Title */
+  #s0{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .kicker{font-size:26px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent2);font-weight:600}
+  .h1{font-size:112px;font-weight:800;letter-spacing:-.035em;line-height:1.02;margin-top:28px}
+  .grad{background:linear-gradient(90deg,#A79BFF,#2FD4B5);-webkit-background-clip:text;color:transparent}
+  .sub{font-size:34px;color:var(--muted);margin-top:34px;font-weight:500}
+
+  /* Step layout */
+  .left{position:absolute;left:130px;top:300px;width:640px}
+  .num{font-size:30px;font-weight:700;color:var(--accent2);letter-spacing:.1em}
+  .h2{font-size:72px;font-weight:800;letter-spacing:-.03em;line-height:1.05;margin-top:18px}
+  .body{font-size:30px;line-height:1.5;color:var(--muted);margin-top:30px}
+  .body b{color:var(--text);font-weight:600}
+  .chips{display:flex;gap:14px;margin-top:36px;flex-wrap:wrap}
+  .chip{font-size:22px;padding:10px 18px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--text)}
+  .chip span{color:var(--muted)}
+
+  .win{position:absolute;left:880px;top:200px;width:920px;height:680px;border-radius:22px;background:var(--panel);
+    border:1px solid var(--line);box-shadow:0 40px 120px rgba(0,0,0,.55);overflow:hidden}
+  .bar{height:58px;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 22px;gap:10px;background:#0F131B}
+  .dot{width:14px;height:14px;border-radius:50%;background:#2A3040}
+  .url{margin-left:24px;flex:1;height:34px;border-radius:9px;background:#191E2A;color:var(--muted);font-size:18px;display:flex;align-items:center;padding:0 16px}
+  .inner{padding:46px 54px}
+
+  .btn{display:inline-flex;align-items:center;gap:14px;font-size:28px;font-weight:600;padding:22px 34px;border-radius:14px;background:var(--text);color:#0A0C11}
+  .btn.ok{background:rgba(61,220,132,.14);color:var(--green);border:1px solid rgba(61,220,132,.4)}
+  .label{font-size:20px;color:var(--muted);text-transform:uppercase;letter-spacing:.14em;font-weight:600}
+  .repo{display:flex;align-items:center;gap:18px;padding:20px 24px;border-radius:14px;border:1px solid var(--line);margin-top:14px;font-size:26px;background:var(--panel2)}
+  .repo .ic{width:34px;height:34px;border-radius:8px;background:#232A3A;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--muted)}
+  .repo .tag{margin-left:auto;font-size:18px;color:var(--muted)}
+  .repo.sel{border-color:var(--accent);background:rgba(124,108,255,.12)}
+
+  .prompt{margin-top:26px;border:1px solid var(--line);border-radius:16px;background:var(--panel2);padding:28px;height:250px;font-size:32px;line-height:1.45}
+  .caret{display:inline-block;width:3px;height:36px;background:var(--accent);vertical-align:-6px;margin-left:2px}
+  .send{position:absolute;right:54px;bottom:54px}
+  .btn.accent{background:var(--accent);color:#fff}
+
+  .term{padding:40px 46px;font-size:25px;line-height:1.85}
+  .term .ln{opacity:0}
+  .p{color:var(--accent2)} .ok{color:var(--green)} .dim{color:var(--muted)}
+
+  .diff{margin-top:22px;border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:22px;line-height:1.75}
+  .diff .fh{padding:12px 20px;background:#0F131B;color:var(--muted);border-bottom:1px solid var(--line);display:flex}
+  .diff .fh span{margin-left:auto}
+  .diff .l{padding:0 20px;white-space:pre}
+  .diff .rm{background:rgba(255,107,107,.1);color:#FF9A9A}
+  .diff .ad{background:rgba(61,220,132,.1);color:#7EF0AE}
+  .toast{position:absolute;left:54px;right:54px;bottom:44px;padding:22px 28px;border-radius:14px;background:rgba(61,220,132,.12);
+    border:1px solid rgba(61,220,132,.45);color:var(--green);font-size:26px;font-weight:600;opacity:0}
+  .prbtn{position:absolute;right:54px;bottom:44px}
+
+  /* Outro */
+  #s5{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .cards{display:flex;gap:40px;margin-top:60px}
+  .card{width:620px;text-align:left;border-radius:22px;background:var(--panel);border:1px solid var(--line);padding:40px 44px}
+  .card h3{font-size:34px;font-weight:700}
+  .card .cmd{margin-top:24px;font-size:28px;line-height:1.8;background:#0D1017;border-radius:12px;padding:22px 26px;border:1px solid var(--line)}
+  .end{font-size:34px;color:var(--muted);margin-top:56px;font-weight:500}
+
+  /* chrome */
+  #brand{position:absolute;left:130px;top:96px;font-size:22px;font-weight:600;color:var(--muted);letter-spacing:.06em;display:flex;gap:12px;align-items:center}
+  #brand i{width:12px;height:12px;border-radius:3px;background:linear-gradient(135deg,#7C6CFF,#2FD4B5);display:inline-block}
+  #steps{position:absolute;left:130px;bottom:96px;display:flex;gap:14px;align-items:center}
+  .st{width:70px;height:6px;border-radius:3px;background:#222838;overflow:hidden}
+  .st div{height:100%;width:0;background:linear-gradient(90deg,#7C6CFF,#2FD4B5)}
+  #cursor{position:absolute;left:0;top:0;width:40px;height:40px;opacity:0;z-index:50;transform-origin:4px 4px}
+  #ripple{position:absolute;width:90px;height:90px;border-radius:50%;border:3px solid var(--accent);opacity:0;z-index:49}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="glow" id="g1"></div><div class="glow" id="g2"></div><div class="grid"></div>
+  <div id="brand"><i></i>GITHUB + AI CODING AGENTS</div>
+
+  <!-- 0: Title -->
+  <div class="scene" id="s0">
+    <div class="kicker">30-second guide</div>
+    <div class="h1">Work on your GitHub repo<br>with <span class="grad">Claude or Codex</span></div>
+    <div class="sub">Connect. Ask. Review. Ship.</div>
+  </div>
+
+  <!-- 1: Connect -->
+  <div class="scene" id="s1">
+    <div class="left">
+      <div class="num">STEP 01</div>
+      <div class="h2">Connect GitHub</div>
+      <div class="body">Sign in, link your GitHub account and pick which repos the agent can see.</div>
+      <div class="chips"><div class="chip"><span>Claude →</span> claude.ai/code</div><div class="chip"><span>Codex →</span> chatgpt.com/codex</div></div>
+    </div>
+    <div class="win">
+      <div class="bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="url">Settings · Integrations</div></div>
+      <div class="inner">
+        <div class="label">Source control</div>
+        <div style="margin-top:22px;height:84px;position:relative">
+          <div class="btn" id="btnConnect" style="position:absolute">Connect GitHub</div>
+          <div class="btn ok" id="btnConnected" style="position:absolute;opacity:0">✓ GitHub connected</div>
+        </div>
+        <div id="repoList" style="margin-top:44px;opacity:0">
+          <div class="label">Choose a repository</div>
+          <div class="repo" id="r1"><div class="ic">▣</div>you/portfolio<div class="tag">public</div></div>
+          <div class="repo" id="r2"><div class="ic">▣</div>you/my-app<div class="tag">private</div></div>
+          <div class="repo" id="r3"><div class="ic">▣</div>you/docs-site<div class="tag">public</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2: Ask -->
+  <div class="scene" id="s2">
+    <div class="left">
+      <div class="num">STEP 02</div>
+      <div class="h2">Describe the task</div>
+      <div class="body">Select the repo and branch, then say what you want in plain English. <b>Be specific</b>: what to change and how to check it.</div>
+    </div>
+    <div class="win">
+      <div class="bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="url">New task</div></div>
+      <div class="inner">
+        <div style="display:flex;gap:14px">
+          <div class="chip">▣ you/my-app</div><div class="chip mono">⎇ main</div>
+        </div>
+        <div class="prompt"><span id="typed"></span><span class="caret" id="caret"></span></div>
+      </div>
+      <div class="btn accent send" id="btnSend">Start task  →</div>
+    </div>
+  </div>
+
+  <!-- 3: Work -->
+  <div class="scene" id="s3">
+    <div class="left">
+      <div class="num">STEP 03</div>
+      <div class="h2">Let the agent work</div>
+      <div class="body">It clones your repo into a sandbox, creates a branch, edits the code and <b>runs your tests</b>.</div>
+    </div>
+    <div class="win">
+      <div class="bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="url mono">sandbox — my-app</div></div>
+      <div class="term mono" id="term">
+        <div class="ln"><span class="p">$</span> git clone github.com/you/my-app</div>
+        <div class="ln ok">✓ Repository cloned</div>
+        <div class="ln"><span class="p">$</span> git checkout -b fix/login-redirect</div>
+        <div class="ln dim">● Reading src/auth/login.ts</div>
+        <div class="ln dim">● Editing src/auth/login.ts</div>
+        <div class="ln dim">● Adding tests/login.test.ts</div>
+        <div class="ln"><span class="p">$</span> npm test</div>
+        <div class="ln ok">✓ 24 passed, 0 failed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4: Review -->
+  <div class="scene" id="s4">
+    <div class="left">
+      <div class="num">STEP 04</div>
+      <div class="h2">Review, then<br>open a PR</div>
+      <div class="body">Read the diff, ask for tweaks if needed, then push the branch and open a <b>pull request</b>.</div>
+    </div>
+    <div class="win">
+      <div class="bar"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="url">Changes · fix/login-redirect</div></div>
+      <div class="inner" style="padding-top:36px">
+        <div style="display:flex;align-items:center;gap:16px;font-size:26px;font-weight:600">2 files changed <span style="color:var(--green)">+38</span><span style="color:var(--red)">−6</span></div>
+        <div class="diff mono">
+          <div class="fh">src/auth/login.ts<span>+4 −2</span></div>
+          <div class="l rm">-  redirect(req.query.next)</div>
+          <div class="l ad">+  const next = safePath(req.query.next)</div>
+          <div class="l ad">+  redirect(next ?? "/dashboard")</div>
+          <div class="fh" style="border-top:1px solid var(--line)">tests/login.test.ts<span>+34 −4</span></div>
+          <div class="l ad">+  it("blocks external redirects", ...)</div>
+        </div>
+      </div>
+      <div class="btn accent prbtn" id="btnPR">Create pull request</div>
+      <div class="toast" id="toast">✓ Draft PR #12 opened on you/my-app</div>
+    </div>
+  </div>
+
+  <!-- 5: Outro -->
+  <div class="scene" id="s5">
+    <div class="kicker">Prefer the terminal?</div>
+    <div class="cards">
+      <div class="card"><h3>Claude Code</h3><div class="cmd mono"><span class="p">$</span> cd my-app<br><span class="p">$</span> claude</div></div>
+      <div class="card"><h3>Codex CLI</h3><div class="cmd mono"><span class="p">$</span> cd my-app<br><span class="p">$</span> codex</div></div>
+    </div>
+    <div class="end">Same repo. Same Git workflow. <span style="color:var(--text)">You stay in control.</span></div>
+  </div>
+
+  <div id="steps"><div class="st"><div></div></div><div class="st"><div></div></div><div class="st"><div></div></div><div class="st"><div></div></div></div>
+  <div id="ripple"></div>
+  <svg id="cursor" viewBox="0 0 40 40"><path d="M4 3 L4 31 L11.5 24 L16.5 35 L21.5 33 L16.5 22.5 L27 22.5 Z" fill="#fff" stroke="#0A0C11" stroke-width="2" stroke-linejoin="round"/></svg>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const clamp = (v,a=0,b=1) => Math.min(b,Math.max(a,v));
+const ease = x => x<.5 ? 4*x*x*x : 1-Math.pow(-2*x+2,3)/2;
+const easeOut = x => 1-Math.pow(1-x,3);
+const prog = (t,s,d) => clamp((t-s)/d);
+
+// scene windows [start, end]
+const S = [[0,3.3],[3.3,9.1],[9.1,15.1],[15.1,21.1],[21.1,26.5],[26.5,30.2]];
+
+function sceneState(t,[a,b]){
+  const fin = easeOut(prog(t,a,.5)), fout = ease(prog(t,b-.35,.35));
+  return {op: fin*(1-fout), y:(1-fin)*40 - fout*30, active: t>=a && t<=b};
+}
+function center(sel){ const r=$(sel).getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height/2]; }
+
+const prompt = "Fix the login redirect bug and add a test so it can't come back.";
+
+function render(t){
+  // background drift
+  $('#g1').style.transform = `translate(${Math.sin(t*.25)*80}px,${Math.cos(t*.2)*60}px)`;
+  $('#g2').style.transform = `translate(${Math.cos(t*.22)*70}px,${Math.sin(t*.3)*50}px)`;
+
+  S.forEach((w,i)=>{
+    const st = sceneState(t,w), el = $('#s'+i);
+    el.style.opacity = st.op;
+    const left = el.querySelector('.left'), win = el.querySelector('.win');
+    if(left){ left.style.transform=`translateY(${st.y}px)`;
+      win.style.transform=`translateY(${st.y*1.6}px) scale(${.97+.03*st.op})`; }
+    else el.style.transform=`translateY(${st.y}px) scale(${.98+.02*st.op})`;
+  });
+
+  // title: staggered
+  const s0kids=[...$('#s0').children];
+  s0kids.forEach((k,i)=>{ const p=easeOut(prog(t,.15+i*.25,.7)); k.style.opacity=p; k.style.transform=`translateY(${(1-p)*30}px)`; });
+
+  // brand + step bars
+  const chrome = clamp(prog(t,3.2,.5)) * (1-prog(t,26.2,.5));
+  $('#steps').style.opacity = chrome;
+  [[3.3,9.1],[9.1,15.1],[15.1,21.1],[21.1,26.5]].forEach(([a,b],i)=>{
+    document.querySelectorAll('.st div')[i].style.width = (prog(t,a,b-a)*100)+'%';
+  });
+
+  // Scene 1
+  const conn = t>=4.55;
+  $('#btnConnect').style.opacity = conn?0:1;
+  $('#btnConnected').style.opacity = conn?1:0;
+  const rl = easeOut(prog(t,5.0,.6));
+  $('#repoList').style.opacity = rl; $('#repoList').style.transform=`translateY(${(1-rl)*20}px)`;
+  $('#r2').classList.toggle('sel', t>=6.65);
+
+  // Scene 2: typing
+  const n = Math.floor(prompt.length*prog(t,10.0,3.0));
+  $('#typed').textContent = prompt.slice(0,n);
+  $('#caret').style.opacity = (Math.floor(t*2.5)%2===0 || (t>10&&t<13.1)) ? 1 : 0;
+  const sendPulse = t>13.9 && t<14.2 ? .94 : 1;
+  $('#btnSend').style.transform = `scale(${sendPulse})`;
+
+  // Scene 3: terminal lines
+  document.querySelectorAll('#term .ln').forEach((ln,i)=>{
+    const times=[15.6,16.3,16.9,17.5,18.0,18.5,19.1,19.9];
+    const p = easeOut(prog(t,times[i],.3));
+    ln.style.opacity=p; ln.style.transform=`translateX(${(1-p)*-14}px)`;
+  });
+
+  // Scene 4
+  const prClicked = t>=23.7;
+  $('#btnPR').style.opacity = prClicked?0:1;
+  $('#btnPR').style.transform = `scale(${t>23.5&&t<23.7?.94:1})`;
+  const tp = easeOut(prog(t,23.8,.5));
+  $('#toast').style.opacity=tp; $('#toast').style.transform=`translateY(${(1-tp)*20}px)`;
+
+  // Outro stagger
+  const s5=[...$('#s5').children];
+  s5.forEach((k,i)=>{ const p=easeOut(prog(t,26.6+i*.35,.6)); k.style.opacity=p; k.style.transform=`translateY(${(1-p)*24}px)`; });
+
+  // Cursor choreography
+  const paths = [
+    {a:3.7,b:8.7, keys:[[3.7,[1650,980]],[4.4,'#btnConnect'],[5.9,'#btnConnect'],[6.5,'#r2'],[8.7,'#r2']], clicks:[4.5,6.6]},
+    {a:13.0,b:14.8, keys:[[13.0,[1500,560]],[13.85,'#btnSend'],[14.8,'#btnSend']], clicks:[13.95]},
+    {a:22.3,b:26.0, keys:[[22.3,[1300,600]],[23.4,'#btnPR'],[26,'#btnPR']], clicks:[23.55]},
+  ];
+  let shown=false;
+  for(const p of paths){
+    if(t<p.a||t>p.b) continue;
+    shown=true;
+    const pts=p.keys.map(([kt,v])=>[kt, typeof v==='string'?center(v):v]);
+    let pos=pts[pts.length-1][1];
+    for(let i=0;i<pts.length-1;i++){
+      if(t>=pts[i][0]&&t<=pts[i+1][0]){
+        const q=ease(prog(t,pts[i][0],pts[i+1][0]-pts[i][0]));
+        pos=[pts[i][1][0]+(pts[i+1][1][0]-pts[i][1][0])*q, pts[i][1][1]+(pts[i+1][1][1]-pts[i][1][1])*q]; break;
+      }
+    }
+    const fade = Math.min(prog(t,p.a,.25), 1-prog(t,p.b-.25,.25));
+    let sc=1, rip=null;
+    for(const c of p.clicks){ if(t>=c-.08&&t<=c+.12) sc=.82; if(t>=c&&t<=c+.5) rip=prog(t,c,.5); }
+    const cur=$('#cursor');
+    cur.style.opacity=fade; cur.style.transform=`translate(${pos[0]-4}px,${pos[1]-4}px) scale(${sc})`;
+    const r=$('#ripple');
+    if(rip!==null){ r.style.opacity=(1-rip)*.9; r.style.left=(pos[0]-45)+'px'; r.style.top=(pos[1]-45)+'px'; r.style.transform=`scale(${.3+rip*1.1})`; }
+    else r.style.opacity=0;
+  }
+  if(!shown){ $('#cursor').style.opacity=0; $('#ripple').style.opacity=0; }
+}
+window.render = render;
+render(0);
+</script>
+</body>
+</html>
