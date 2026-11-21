@@ -1,0 +1,1119 @@
+{
+ "hasAudio": false,
+ "duration": 70.39499999999998,
+ "scenes": [
+  {
+   "id": "fired",
+   "start": 0.3,
+   "end": 5.2
+  },
+  {
+   "id": "hired",
+   "start": 5.48,
+   "end": 8.95
+  },
+  {
+   "id": "locked",
+   "start": 9.23,
+   "end": 14.17
+  },
+  {
+   "id": "unlock",
+   "start": 14.45,
+   "end": 17.08
+  },
+  {
+   "id": "speed",
+   "start": 17.36,
+   "end": 22.89
+  },
+  {
+   "id": "viral",
+   "start": 23.17,
+   "end": 28.905
+  },
+  {
+   "id": "pattern",
+   "start": 29.185,
+   "end": 35.21
+  },
+  {
+   "id": "comment",
+   "start": 35.49,
+   "end": 41.425
+  },
+  {
+   "id": "approve",
+   "start": 41.705,
+   "end": 44.245
+  },
+  {
+   "id": "danger",
+   "start": 44.525,
+   "end": 47.38
+  },
+  {
+   "id": "plan",
+   "start": 47.66,
+   "end": 54.555
+  },
+  {
+   "id": "think",
+   "start": 54.835,
+   "end": 58.795
+  },
+  {
+   "id": "save",
+   "start": 59.075,
+   "end": 60.99
+  },
+  {
+   "id": "cta",
+   "start": 61.27,
+   "end": 66.585
+  },
+  {
+   "id": "dm",
+   "start": 66.865,
+   "end": 69.315
+  }
+ ],
+ "words": [
+  {
+   "cap": "Maine",
+   "emph": false,
+   "scene": 0,
+   "start": 0.3,
+   "end": 0.705
+  },
+  {
+   "cap": "apna",
+   "emph": false,
+   "scene": 0,
+   "start": 0.745,
+   "end": 1.105
+  },
+  {
+   "cap": "₹15,000",
+   "emph": true,
+   "scene": 0,
+   "start": 1.145,
+   "end": 1.64
+  },
+  {
+   "cap": "mahine",
+   "emph": false,
+   "scene": 0,
+   "start": 1.68,
+   "end": 2.13
+  },
+  {
+   "cap": "wala",
+   "emph": false,
+   "scene": 0,
+   "start": 2.17,
+   "end": 2.53
+  },
+  {
+   "cap": "Social",
+   "emph": false,
+   "scene": 0,
+   "start": 2.57,
+   "end": 3.02
+  },
+  {
+   "cap": "Media",
+   "emph": false,
+   "scene": 0,
+   "start": 3.06,
+   "end": 3.465
+  },
+  {
+   "cap": "Manager",
+   "emph": false,
+   "scene": 0,
+   "start": 3.505,
+   "end": 4
+  },
+  {
+   "cap": "FIRE",
+   "emph": true,
+   "scene": 0,
+   "start": 4.04,
+   "end": 4.4
+  },
+  {
+   "cap": "kar",
+   "emph": false,
+   "scene": 0,
+   "start": 4.44,
+   "end": 4.755
+  },
+  {
+   "cap": "diya.",
+   "emph": false,
+   "scene": 0,
+   "start": 4.795,
+   "end": 5.2
+  },
+  {
+   "cap": "Aur",
+   "emph": false,
+   "scene": 1,
+   "start": 5.48,
+   "end": 5.795
+  },
+  {
+   "cap": "uski",
+   "emph": false,
+   "scene": 1,
+   "start": 5.835,
+   "end": 6.195
+  },
+  {
+   "cap": "jagah",
+   "emph": false,
+   "scene": 1,
+   "start": 6.235,
+   "end": 6.64
+  },
+  {
+   "cap": "Claude",
+   "emph": true,
+   "scene": 1,
+   "start": 6.68,
+   "end": 7.13
+  },
+  {
+   "cap": "AI",
+   "emph": true,
+   "scene": 1,
+   "start": 7.17,
+   "end": 7.44
+  },
+  {
+   "cap": "ko",
+   "emph": false,
+   "scene": 1,
+   "start": 7.48,
+   "end": 7.75
+  },
+  {
+   "cap": "hire",
+   "emph": false,
+   "scene": 1,
+   "start": 7.79,
+   "end": 8.15
+  },
+  {
+   "cap": "kar",
+   "emph": false,
+   "scene": 1,
+   "start": 8.19,
+   "end": 8.505
+  },
+  {
+   "cap": "liya.",
+   "emph": false,
+   "scene": 1,
+   "start": 8.545,
+   "end": 8.95
+  },
+  {
+   "cap": "Is",
+   "emph": false,
+   "scene": 2,
+   "start": 9.23,
+   "end": 9.5
+  },
+  {
+   "cap": "ek",
+   "emph": false,
+   "scene": 2,
+   "start": 9.54,
+   "end": 9.81
+  },
+  {
+   "cap": "AI",
+   "emph": false,
+   "scene": 2,
+   "start": 9.85,
+   "end": 10.12
+  },
+  {
+   "cap": "agent",
+   "emph": false,
+   "scene": 2,
+   "start": 10.16,
+   "end": 10.565
+  },
+  {
+   "cap": "ke",
+   "emph": false,
+   "scene": 2,
+   "start": 10.605,
+   "end": 10.875
+  },
+  {
+   "cap": "andar",
+   "emph": false,
+   "scene": 2,
+   "start": 10.915,
+   "end": 11.32
+  },
+  {
+   "cap": "chhupe",
+   "emph": false,
+   "scene": 2,
+   "start": 11.36,
+   "end": 11.81
+  },
+  {
+   "cap": "hain",
+   "emph": false,
+   "scene": 2,
+   "start": 11.85,
+   "end": 12.21
+  },
+  {
+   "cap": "13",
+   "emph": true,
+   "scene": 2,
+   "start": 12.25,
+   "end": 12.52
+  },
+  {
+   "cap": "secret",
+   "emph": false,
+   "scene": 2,
+   "start": 12.56,
+   "end": 13.01
+  },
+  {
+   "cap": "Instagram",
+   "emph": false,
+   "scene": 2,
+   "start": 13.05,
+   "end": 13.635
+  },
+  {
+   "cap": "skills.",
+   "emph": false,
+   "scene": 2,
+   "start": 13.675,
+   "end": 14.17
+  },
+  {
+   "cap": "Aaj",
+   "emph": false,
+   "scene": 3,
+   "start": 14.45,
+   "end": 14.765
+  },
+  {
+   "cap": "main",
+   "emph": false,
+   "scene": 3,
+   "start": 14.805,
+   "end": 15.165
+  },
+  {
+   "cap": "aapko",
+   "emph": false,
+   "scene": 3,
+   "start": 15.205,
+   "end": 15.61
+  },
+  {
+   "cap": "sirf",
+   "emph": false,
+   "scene": 3,
+   "start": 15.65,
+   "end": 16.01
+  },
+  {
+   "cap": "teen",
+   "emph": true,
+   "scene": 3,
+   "start": 16.05,
+   "end": 16.41
+  },
+  {
+   "cap": "dikhaunga.",
+   "emph": false,
+   "scene": 3,
+   "start": 16.45,
+   "end": 17.08
+  },
+  {
+   "cap": "Jo",
+   "emph": false,
+   "scene": 4,
+   "start": 17.36,
+   "end": 17.63
+  },
+  {
+   "cap": "kaam",
+   "emph": false,
+   "scene": 4,
+   "start": 17.67,
+   "end": 18.03
+  },
+  {
+   "cap": "pehle",
+   "emph": false,
+   "scene": 4,
+   "start": 18.07,
+   "end": 18.475
+  },
+  {
+   "cap": "10",
+   "emph": true,
+   "scene": 4,
+   "start": 18.515,
+   "end": 18.785
+  },
+  {
+   "cap": "ghante",
+   "emph": false,
+   "scene": 4,
+   "start": 18.825,
+   "end": 19.275
+  },
+  {
+   "cap": "leta",
+   "emph": false,
+   "scene": 4,
+   "start": 19.315,
+   "end": 19.675
+  },
+  {
+   "cap": "tha,",
+   "emph": false,
+   "scene": 4,
+   "start": 19.715,
+   "end": 20.075
+  },
+  {
+   "cap": "ab",
+   "emph": false,
+   "scene": 4,
+   "start": 20.355,
+   "end": 20.625
+  },
+  {
+   "cap": "wo",
+   "emph": false,
+   "scene": 4,
+   "start": 20.665,
+   "end": 20.935
+  },
+  {
+   "cap": "4",
+   "emph": true,
+   "scene": 4,
+   "start": 20.975,
+   "end": 21.2
+  },
+  {
+   "cap": "minute",
+   "emph": false,
+   "scene": 4,
+   "start": 21.24,
+   "end": 21.69
+  },
+  {
+   "cap": "mein",
+   "emph": false,
+   "scene": 4,
+   "start": 21.73,
+   "end": 22.09
+  },
+  {
+   "cap": "hota",
+   "emph": false,
+   "scene": 4,
+   "start": 22.13,
+   "end": 22.49
+  },
+  {
+   "cap": "hai.",
+   "emph": false,
+   "scene": 4,
+   "start": 22.53,
+   "end": 22.89
+  },
+  {
+   "cap": "Pehla",
+   "emph": false,
+   "scene": 5,
+   "start": 23.17,
+   "end": 23.575
+  },
+  {
+   "cap": "command:",
+   "emph": false,
+   "scene": 5,
+   "start": 23.615,
+   "end": 24.155
+  },
+  {
+   "cap": "/ig-viral.",
+   "emph": true,
+   "scene": 5,
+   "start": 24.435,
+   "end": 25.065
+  },
+  {
+   "cap": "Ye",
+   "emph": false,
+   "scene": 5,
+   "start": 25.345,
+   "end": 25.615
+  },
+  {
+   "cap": "mere",
+   "emph": false,
+   "scene": 5,
+   "start": 25.655,
+   "end": 26.015
+  },
+  {
+   "cap": "niche",
+   "emph": false,
+   "scene": 5,
+   "start": 26.055,
+   "end": 26.46
+  },
+  {
+   "cap": "ke",
+   "emph": false,
+   "scene": 5,
+   "start": 26.5,
+   "end": 26.77
+  },
+  {
+   "cap": "viral",
+   "emph": false,
+   "scene": 5,
+   "start": 26.81,
+   "end": 27.215
+  },
+  {
+   "cap": "reels",
+   "emph": false,
+   "scene": 5,
+   "start": 27.255,
+   "end": 27.66
+  },
+  {
+   "cap": "scan",
+   "emph": false,
+   "scene": 5,
+   "start": 27.7,
+   "end": 28.06
+  },
+  {
+   "cap": "karta",
+   "emph": false,
+   "scene": 5,
+   "start": 28.1,
+   "end": 28.505
+  },
+  {
+   "cap": "hai,",
+   "emph": false,
+   "scene": 5,
+   "start": 28.545,
+   "end": 28.905
+  },
+  {
+   "cap": "unka",
+   "emph": false,
+   "scene": 6,
+   "start": 29.185,
+   "end": 29.545
+  },
+  {
+   "cap": "pattern",
+   "emph": false,
+   "scene": 6,
+   "start": 29.585,
+   "end": 30.08
+  },
+  {
+   "cap": "todta",
+   "emph": false,
+   "scene": 6,
+   "start": 30.12,
+   "end": 30.525
+  },
+  {
+   "cap": "hai,",
+   "emph": false,
+   "scene": 6,
+   "start": 30.565,
+   "end": 30.925
+  },
+  {
+   "cap": "aur",
+   "emph": false,
+   "scene": 6,
+   "start": 31.205,
+   "end": 31.52
+  },
+  {
+   "cap": "bina",
+   "emph": false,
+   "scene": 6,
+   "start": 31.56,
+   "end": 31.92
+  },
+  {
+   "cap": "copy",
+   "emph": true,
+   "scene": 6,
+   "start": 31.96,
+   "end": 32.32
+  },
+  {
+   "cap": "kiye",
+   "emph": false,
+   "scene": 6,
+   "start": 32.36,
+   "end": 32.72
+  },
+  {
+   "cap": "ek",
+   "emph": false,
+   "scene": 6,
+   "start": 32.76,
+   "end": 33.03
+  },
+  {
+   "cap": "naya",
+   "emph": false,
+   "scene": 6,
+   "start": 33.07,
+   "end": 33.43
+  },
+  {
+   "cap": "banger",
+   "emph": true,
+   "scene": 6,
+   "start": 33.47,
+   "end": 33.92
+  },
+  {
+   "cap": "hook",
+   "emph": false,
+   "scene": 6,
+   "start": 33.96,
+   "end": 34.32
+  },
+  {
+   "cap": "likhta",
+   "emph": false,
+   "scene": 6,
+   "start": 34.36,
+   "end": 34.81
+  },
+  {
+   "cap": "hai.",
+   "emph": false,
+   "scene": 6,
+   "start": 34.85,
+   "end": 35.21
+  },
+  {
+   "cap": "Dusra",
+   "emph": false,
+   "scene": 7,
+   "start": 35.49,
+   "end": 35.895
+  },
+  {
+   "cap": "command:",
+   "emph": false,
+   "scene": 7,
+   "start": 35.935,
+   "end": 36.475
+  },
+  {
+   "cap": "/ig-comment.",
+   "emph": true,
+   "scene": 7,
+   "start": 36.755,
+   "end": 37.475
+  },
+  {
+   "cap": "Har",
+   "emph": false,
+   "scene": 7,
+   "start": 37.755,
+   "end": 38.07
+  },
+  {
+   "cap": "comment",
+   "emph": false,
+   "scene": 7,
+   "start": 38.11,
+   "end": 38.605
+  },
+  {
+   "cap": "ka",
+   "emph": false,
+   "scene": 7,
+   "start": 38.645,
+   "end": 38.915
+  },
+  {
+   "cap": "reply,",
+   "emph": false,
+   "scene": 7,
+   "start": 38.955,
+   "end": 39.405
+  },
+  {
+   "cap": "bilkul",
+   "emph": false,
+   "scene": 7,
+   "start": 39.685,
+   "end": 40.135
+  },
+  {
+   "cap": "meri",
+   "emph": true,
+   "scene": 7,
+   "start": 40.175,
+   "end": 40.535
+  },
+  {
+   "cap": "style",
+   "emph": false,
+   "scene": 7,
+   "start": 40.575,
+   "end": 40.98
+  },
+  {
+   "cap": "mein.",
+   "emph": false,
+   "scene": 7,
+   "start": 41.02,
+   "end": 41.425
+  },
+  {
+   "cap": "Mujhe",
+   "emph": false,
+   "scene": 8,
+   "start": 41.705,
+   "end": 42.11
+  },
+  {
+   "cap": "bas",
+   "emph": false,
+   "scene": 8,
+   "start": 42.15,
+   "end": 42.465
+  },
+  {
+   "cap": "approve",
+   "emph": true,
+   "scene": 8,
+   "start": 42.505,
+   "end": 43
+  },
+  {
+   "cap": "karna",
+   "emph": false,
+   "scene": 8,
+   "start": 43.04,
+   "end": 43.445
+  },
+  {
+   "cap": "hota",
+   "emph": false,
+   "scene": 8,
+   "start": 43.485,
+   "end": 43.845
+  },
+  {
+   "cap": "hai.",
+   "emph": false,
+   "scene": 8,
+   "start": 43.885,
+   "end": 44.245
+  },
+  {
+   "cap": "Aur",
+   "emph": false,
+   "scene": 9,
+   "start": 44.525,
+   "end": 44.84
+  },
+  {
+   "cap": "teesra",
+   "emph": false,
+   "scene": 9,
+   "start": 44.88,
+   "end": 45.33
+  },
+  {
+   "cap": "command",
+   "emph": false,
+   "scene": 9,
+   "start": 45.37,
+   "end": 45.865
+  },
+  {
+   "cap": "sabse",
+   "emph": false,
+   "scene": 9,
+   "start": 45.905,
+   "end": 46.31
+  },
+  {
+   "cap": "khatarnaak",
+   "emph": true,
+   "scene": 9,
+   "start": 46.35,
+   "end": 46.98
+  },
+  {
+   "cap": "hai.",
+   "emph": false,
+   "scene": 9,
+   "start": 47.02,
+   "end": 47.38
+  },
+  {
+   "cap": "/ig-plan.",
+   "emph": true,
+   "scene": 10,
+   "start": 47.66,
+   "end": 48.245
+  },
+  {
+   "cap": "Ek",
+   "emph": false,
+   "scene": 10,
+   "start": 48.525,
+   "end": 48.795
+  },
+  {
+   "cap": "click",
+   "emph": false,
+   "scene": 10,
+   "start": 48.835,
+   "end": 49.24
+  },
+  {
+   "cap": "mein",
+   "emph": false,
+   "scene": 10,
+   "start": 49.28,
+   "end": 49.64
+  },
+  {
+   "cap": "poore",
+   "emph": false,
+   "scene": 10,
+   "start": 49.68,
+   "end": 50.085
+  },
+  {
+   "cap": "hafte",
+   "emph": false,
+   "scene": 10,
+   "start": 50.125,
+   "end": 50.53
+  },
+  {
+   "cap": "ka",
+   "emph": false,
+   "scene": 10,
+   "start": 50.57,
+   "end": 50.84
+  },
+  {
+   "cap": "content",
+   "emph": false,
+   "scene": 10,
+   "start": 50.88,
+   "end": 51.375
+  },
+  {
+   "cap": "calendar,",
+   "emph": false,
+   "scene": 10,
+   "start": 51.415,
+   "end": 52
+  },
+  {
+   "cap": "scripts",
+   "emph": false,
+   "scene": 10,
+   "start": 52.28,
+   "end": 52.775
+  },
+  {
+   "cap": "aur",
+   "emph": false,
+   "scene": 10,
+   "start": 52.815,
+   "end": 53.13
+  },
+  {
+   "cap": "SEO",
+   "emph": true,
+   "scene": 10,
+   "start": 53.17,
+   "end": 53.485
+  },
+  {
+   "cap": "captions",
+   "emph": false,
+   "scene": 10,
+   "start": 53.525,
+   "end": 54.065
+  },
+  {
+   "cap": "ready.",
+   "emph": false,
+   "scene": 10,
+   "start": 54.105,
+   "end": 54.555
+  },
+  {
+   "cap": "Ab",
+   "emph": false,
+   "scene": 11,
+   "start": 54.835,
+   "end": 55.105
+  },
+  {
+   "cap": "kabhi",
+   "emph": false,
+   "scene": 11,
+   "start": 55.145,
+   "end": 55.55
+  },
+  {
+   "cap": "nahi",
+   "emph": false,
+   "scene": 11,
+   "start": 55.59,
+   "end": 55.95
+  },
+  {
+   "cap": "sochna",
+   "emph": false,
+   "scene": 11,
+   "start": 55.99,
+   "end": 56.44
+  },
+  {
+   "cap": "padta",
+   "emph": false,
+   "scene": 11,
+   "start": 56.48,
+   "end": 56.885
+  },
+  {
+   "cap": "ki",
+   "emph": false,
+   "scene": 11,
+   "start": 56.925,
+   "end": 57.195
+  },
+  {
+   "cap": "aaj",
+   "emph": true,
+   "scene": 11,
+   "start": 57.235,
+   "end": 57.55
+  },
+  {
+   "cap": "kya",
+   "emph": true,
+   "scene": 11,
+   "start": 57.59,
+   "end": 57.905
+  },
+  {
+   "cap": "post",
+   "emph": true,
+   "scene": 11,
+   "start": 57.945,
+   "end": 58.305
+  },
+  {
+   "cap": "karun?",
+   "emph": true,
+   "scene": 11,
+   "start": 58.345,
+   "end": 58.795
+  },
+  {
+   "cap": "Ye",
+   "emph": false,
+   "scene": 12,
+   "start": 59.075,
+   "end": 59.345
+  },
+  {
+   "cap": "reel",
+   "emph": false,
+   "scene": 12,
+   "start": 59.385,
+   "end": 59.745
+  },
+  {
+   "cap": "abhi",
+   "emph": true,
+   "scene": 12,
+   "start": 59.785,
+   "end": 60.145
+  },
+  {
+   "cap": "save",
+   "emph": true,
+   "scene": 12,
+   "start": 60.185,
+   "end": 60.545
+  },
+  {
+   "cap": "karo.",
+   "emph": false,
+   "scene": 12,
+   "start": 60.585,
+   "end": 60.99
+  },
+  {
+   "cap": "Aur",
+   "emph": false,
+   "scene": 13,
+   "start": 61.27,
+   "end": 61.585
+  },
+  {
+   "cap": "agar",
+   "emph": false,
+   "scene": 13,
+   "start": 61.625,
+   "end": 61.985
+  },
+  {
+   "cap": "13",
+   "emph": false,
+   "scene": 13,
+   "start": 62.025,
+   "end": 62.295
+  },
+  {
+   "cap": "skills",
+   "emph": false,
+   "scene": 13,
+   "start": 62.335,
+   "end": 62.785
+  },
+  {
+   "cap": "ka",
+   "emph": false,
+   "scene": 13,
+   "start": 62.825,
+   "end": 63.095
+  },
+  {
+   "cap": "exact",
+   "emph": false,
+   "scene": 13,
+   "start": 63.135,
+   "end": 63.54
+  },
+  {
+   "cap": "setup",
+   "emph": false,
+   "scene": 13,
+   "start": 63.58,
+   "end": 63.985
+  },
+  {
+   "cap": "chahiye,",
+   "emph": false,
+   "scene": 13,
+   "start": 64.025,
+   "end": 64.565
+  },
+  {
+   "cap": "toh",
+   "emph": false,
+   "scene": 13,
+   "start": 64.845,
+   "end": 65.16
+  },
+  {
+   "cap": "comment",
+   "emph": false,
+   "scene": 13,
+   "start": 65.2,
+   "end": 65.695
+  },
+  {
+   "cap": "karo",
+   "emph": false,
+   "scene": 13,
+   "start": 65.735,
+   "end": 66.095
+  },
+  {
+   "cap": "AGENT.",
+   "emph": true,
+   "scene": 13,
+   "start": 66.135,
+   "end": 66.585
+  },
+  {
+   "cap": "Link",
+   "emph": false,
+   "scene": 14,
+   "start": 66.865,
+   "end": 67.225
+  },
+  {
+   "cap": "seedha",
+   "emph": false,
+   "scene": 14,
+   "start": 67.265,
+   "end": 67.715
+  },
+  {
+   "cap": "DM",
+   "emph": true,
+   "scene": 14,
+   "start": 67.755,
+   "end": 68.025
+  },
+  {
+   "cap": "mein",
+   "emph": false,
+   "scene": 14,
+   "start": 68.065,
+   "end": 68.425
+  },
+  {
+   "cap": "bhej",
+   "emph": false,
+   "scene": 14,
+   "start": 68.465,
+   "end": 68.825
+  },
+  {
+   "cap": "dunga.",
+   "emph": false,
+   "scene": 14,
+   "start": 68.865,
+   "end": 69.315
+  }
+ ]
+}

@@ -1,0 +1,100 @@
+{
+  "_format": "Each word is caption|tts. A leading * marks a highlighted (crimson) caption word. Underscores in the tts part become spaces.",
+  "scenes": [
+    {
+      "id": "fired",
+      "title": "Social Media Manager",
+      "sub": "₹15,000/Mahine",
+      "words": "Maine|मैंने apna|अपना *₹15,000|पंद्रह_हज़ार mahine|महीने wala|वाला Social|Social Media|Media Manager|Manager *FIRE|fire kar|कर diya.|दिया।"
+    },
+    {
+      "id": "hired",
+      "title": "Claude AI",
+      "sub": "Hired.",
+      "words": "Aur|और uski|उसकी jagah|जगह *Claude|क्लॉड *AI|AI ko|को hire|hire kar|कर liya.|लिया।"
+    },
+    {
+      "id": "locked",
+      "title": "Ek AI Agent",
+      "sub": "13 Secret Skills",
+      "words": "Is|इस ek|एक AI|AI agent|एजेंट ke|के andar|अंदर chhupe|छुपे hain|हैं *13|तेरह secret|secret Instagram|Instagram skills.|स्किल्स।"
+    },
+    {
+      "id": "unlock",
+      "title": "Aaj Sirf 3",
+      "sub": "Unlock Karunga",
+      "words": "Aaj|आज main|मैं aapko|आपको sirf|सिर्फ़ *teen|तीन dikhaunga.|दिखाऊँगा।"
+    },
+    {
+      "id": "speed",
+      "title": "10 Ghante Ka Kaam",
+      "sub": "4 Minute Mein",
+      "words": "Jo|जो kaam|काम pehle|पहले *10|दस ghante|घंटे leta|लेता tha,|था, ab|अब wo|वो *4|चार minute|मिनट mein|में hota|होता hai.|है।"
+    },
+    {
+      "id": "viral",
+      "chip": "Command 01",
+      "title": "Pehla Skill",
+      "sub": "/ig-viral",
+      "mono": true,
+      "words": "Pehla|पहला command:|कमांड: */ig-viral.|स्लैश_IG_वायरल। Ye|ये mere|मेरे niche|नीश ke|के viral|वायरल reels|रील्स scan|स्कैन karta|करता hai,|है,"
+    },
+    {
+      "id": "pattern",
+      "title": "Pattern Todta Hai",
+      "sub": "Copy Nahi Karta",
+      "words": "unka|उनका pattern|पैटर्न todta|तोड़ता hai,|है, aur|और bina|बिना *copy|कॉपी kiye|किए ek|एक naya|नया *banger|बैंगर hook|हुक likhta|लिखता hai.|है।"
+    },
+    {
+      "id": "comment",
+      "chip": "Command 02",
+      "title": "Dusra Skill",
+      "sub": "/ig-comment",
+      "mono": true,
+      "words": "Dusra|दूसरा command:|कमांड: */ig-comment.|स्लैश_IG_कमेंट। Har|हर comment|कमेंट ka|का reply,|रिप्लाई, bilkul|बिल्कुल *meri|मेरी style|स्टाइल mein.|में।"
+    },
+    {
+      "id": "approve",
+      "title": "Mujhe Bas",
+      "sub": "Approve Karna Hai",
+      "words": "Mujhe|मुझे bas|बस *approve|अप्रूव karna|करना hota|होता hai.|है।"
+    },
+    {
+      "id": "danger",
+      "chip": "Command 03",
+      "title": "Teesra Command",
+      "sub": "Sabse Dangerous",
+      "words": "Aur|और teesra|तीसरा command|कमांड sabse|सबसे *khatarnaak|ख़तरनाक hai.|है।"
+    },
+    {
+      "id": "plan",
+      "title": "Ek Click Mein",
+      "sub": "Poora Week Ready",
+      "words": "*/ig-plan.|स्लैश_IG_प्लान। Ek|एक click|क्लिक mein|में poore|पूरे hafte|हफ़्ते ka|का content|कंटेंट calendar,|कैलेंडर, scripts|स्क्रिप्ट्स aur|और *SEO|SEO captions|कैप्शन्स ready.|रेडी।"
+    },
+    {
+      "id": "think",
+      "title": "Kabhi Nahi Sochna",
+      "sub": "Aaj Kya Post Karun?",
+      "words": "Ab|अब kabhi|कभी nahi|नहीं sochna|सोचना padta|पड़ता ki|कि *aaj|आज *kya|क्या *post|पोस्ट *karun?|करूँ?"
+    },
+    {
+      "id": "save",
+      "title": "Reel Abhi",
+      "sub": "Save Kar Lo",
+      "words": "Ye|ये reel|रील *abhi|अभी *save|सेव karo.|करो।"
+    },
+    {
+      "id": "cta",
+      "title": "13 Skills Ka Setup",
+      "sub": "Comment “AGENT”",
+      "words": "Aur|और agar|अगर 13|तेरह skills|स्किल्स ka|का exact|exact setup|सेटअप chahiye,|चाहिए, toh|तो comment|कमेंट karo|करो *AGENT.|एजेंट।"
+    },
+    {
+      "id": "dm",
+      "title": "Seedha DM Mein",
+      "sub": "Bhej Dunga",
+      "words": "Link|लिंक seedha|सीधा *DM|DM mein|में bhej|भेज dunga.|दूँगा।"
+    }
+  ]
+}
