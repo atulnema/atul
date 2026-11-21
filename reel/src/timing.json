@@ -1,81 +1,81 @@
 {
- "hasAudio": false,
- "duration": 70.39499999999998,
+ "hasAudio": true,
+ "duration": 64.82000000000001,
  "scenes": [
   {
    "id": "fired",
-   "start": 0.3,
-   "end": 5.2
+   "start": 0,
+   "end": 4.48
   },
   {
    "id": "hired",
-   "start": 5.48,
-   "end": 8.95
+   "start": 4.613,
+   "end": 7.84
   },
   {
    "id": "locked",
-   "start": 9.23,
-   "end": 14.17
+   "start": 8.08,
+   "end": 13.76
   },
   {
    "id": "unlock",
-   "start": 14.45,
-   "end": 17.08
+   "start": 13.947,
+   "end": 15.92
   },
   {
    "id": "speed",
-   "start": 17.36,
-   "end": 22.89
+   "start": 16.28,
+   "end": 20.32
   },
   {
    "id": "viral",
-   "start": 23.17,
-   "end": 28.905
+   "start": 20.54,
+   "end": 27.04
   },
   {
    "id": "pattern",
-   "start": 29.185,
-   "end": 35.21
+   "start": 27.18,
+   "end": 32
   },
   {
    "id": "comment",
-   "start": 35.49,
-   "end": 41.425
+   "start": 32.36,
+   "end": 38.72
   },
   {
    "id": "approve",
-   "start": 41.705,
-   "end": 44.245
+   "start": 39,
+   "end": 40.88
   },
   {
    "id": "danger",
-   "start": 44.525,
-   "end": 47.38
+   "start": 41.12,
+   "end": 44.08
   },
   {
    "id": "plan",
-   "start": 47.66,
-   "end": 54.555
+   "start": 44.32,
+   "end": 51.92
   },
   {
    "id": "think",
-   "start": 54.835,
-   "end": 58.795
+   "start": 52.133,
+   "end": 55.36
   },
   {
    "id": "save",
-   "start": 59.075,
-   "end": 60.99
+   "start": 55.52,
+   "end": 56.8
   },
   {
    "id": "cta",
-   "start": 61.27,
-   "end": 66.585
+   "start": 57.04,
+   "end": 61.84
   },
   {
    "id": "dm",
-   "start": 66.865,
-   "end": 69.315
+   "start": 62,
+   "end": 63.92
   }
  ],
  "words": [
@@ -83,1037 +83,1037 @@
    "cap": "Maine",
    "emph": false,
    "scene": 0,
-   "start": 0.3,
-   "end": 0.705
+   "start": 0,
+   "end": 0.36
   },
   {
    "cap": "apna",
    "emph": false,
    "scene": 0,
-   "start": 0.745,
-   "end": 1.105
+   "start": 0.39,
+   "end": 0.56
   },
   {
    "cap": "₹15,000",
    "emph": true,
    "scene": 0,
-   "start": 1.145,
-   "end": 1.64
+   "start": 0.64,
+   "end": 1.44
   },
   {
    "cap": "mahine",
    "emph": false,
    "scene": 0,
-   "start": 1.68,
-   "end": 2.13
+   "start": 1.52,
+   "end": 1.84
   },
   {
    "cap": "wala",
    "emph": false,
    "scene": 0,
-   "start": 2.17,
-   "end": 2.53
+   "start": 1.92,
+   "end": 2.16
   },
   {
    "cap": "Social",
    "emph": false,
    "scene": 0,
-   "start": 2.57,
-   "end": 3.02
+   "start": 2.229,
+   "end": 2.64
   },
   {
    "cap": "Media",
    "emph": false,
    "scene": 0,
-   "start": 3.06,
-   "end": 3.465
+   "start": 2.693,
+   "end": 2.96
   },
   {
    "cap": "Manager",
    "emph": false,
    "scene": 0,
-   "start": 3.505,
-   "end": 4
+   "start": 3.02,
+   "end": 3.44
   },
   {
    "cap": "FIRE",
    "emph": true,
    "scene": 0,
-   "start": 4.04,
-   "end": 4.4
+   "start": 3.52,
+   "end": 3.84
   },
   {
    "cap": "kar",
    "emph": false,
    "scene": 0,
-   "start": 4.44,
-   "end": 4.755
+   "start": 3.92,
+   "end": 4.08
   },
   {
    "cap": "diya.",
    "emph": false,
    "scene": 0,
-   "start": 4.795,
-   "end": 5.2
+   "start": 4.12,
+   "end": 4.48
   },
   {
    "cap": "Aur",
    "emph": false,
    "scene": 1,
-   "start": 5.48,
-   "end": 5.795
+   "start": 4.613,
+   "end": 4.88
   },
   {
    "cap": "uski",
    "emph": false,
    "scene": 1,
-   "start": 5.835,
-   "end": 6.195
+   "start": 4.94,
+   "end": 5.32
   },
   {
    "cap": "jagah",
    "emph": false,
    "scene": 1,
-   "start": 6.235,
-   "end": 6.64
+   "start": 5.37,
+   "end": 5.52
   },
   {
    "cap": "Claude",
    "emph": true,
    "scene": 1,
-   "start": 6.68,
-   "end": 7.13
+   "start": 5.68,
+   "end": 6.16
   },
   {
    "cap": "AI",
    "emph": true,
    "scene": 1,
-   "start": 7.17,
-   "end": 7.44
+   "start": 6.347,
+   "end": 6.72
   },
   {
    "cap": "ko",
    "emph": false,
    "scene": 1,
-   "start": 7.48,
-   "end": 7.75
+   "start": 6.8,
+   "end": 6.96
   },
   {
    "cap": "hire",
    "emph": false,
    "scene": 1,
-   "start": 7.79,
-   "end": 8.15
+   "start": 7.024,
+   "end": 7.28
   },
   {
    "cap": "kar",
    "emph": false,
    "scene": 1,
-   "start": 8.19,
-   "end": 8.505
+   "start": 7.36,
+   "end": 7.52
   },
   {
    "cap": "liya.",
    "emph": false,
    "scene": 1,
-   "start": 8.545,
-   "end": 8.95
+   "start": 7.56,
+   "end": 7.84
   },
   {
    "cap": "Is",
    "emph": false,
    "scene": 2,
-   "start": 9.23,
-   "end": 9.5
+   "start": 8.08,
+   "end": 8.56
   },
   {
    "cap": "ek",
    "emph": false,
    "scene": 2,
-   "start": 9.54,
-   "end": 9.81
+   "start": 8.667,
+   "end": 8.88
   },
   {
    "cap": "AI",
    "emph": false,
    "scene": 2,
-   "start": 9.85,
-   "end": 10.12
+   "start": 9.12,
+   "end": 9.6
   },
   {
    "cap": "agent",
    "emph": false,
    "scene": 2,
-   "start": 10.16,
-   "end": 10.565
+   "start": 9.68,
+   "end": 10
   },
   {
    "cap": "ke",
    "emph": false,
    "scene": 2,
-   "start": 10.605,
-   "end": 10.875
+   "start": 10.08,
+   "end": 10.2
   },
   {
    "cap": "andar",
    "emph": false,
    "scene": 2,
-   "start": 10.915,
-   "end": 11.32
+   "start": 10.22,
+   "end": 10.48
   },
   {
    "cap": "chhupe",
    "emph": false,
    "scene": 2,
-   "start": 11.36,
-   "end": 11.81
+   "start": 10.52,
+   "end": 10.88
   },
   {
    "cap": "hain",
    "emph": false,
    "scene": 2,
-   "start": 11.85,
-   "end": 12.21
+   "start": 10.92,
+   "end": 11.04
   },
   {
    "cap": "13",
    "emph": true,
    "scene": 2,
-   "start": 12.25,
-   "end": 12.52
+   "start": 11.32,
+   "end": 11.84
   },
   {
    "cap": "secret",
    "emph": false,
    "scene": 2,
-   "start": 12.56,
-   "end": 13.01
+   "start": 11.92,
+   "end": 12.4
   },
   {
    "cap": "Instagram",
    "emph": false,
    "scene": 2,
-   "start": 13.05,
-   "end": 13.635
+   "start": 12.464,
+   "end": 13.04
   },
   {
    "cap": "skills.",
    "emph": false,
    "scene": 2,
-   "start": 13.675,
-   "end": 14.17
+   "start": 13.08,
+   "end": 13.76
   },
   {
    "cap": "Aaj",
    "emph": false,
    "scene": 3,
-   "start": 14.45,
-   "end": 14.765
+   "start": 13.947,
+   "end": 14.32
   },
   {
    "cap": "main",
    "emph": false,
    "scene": 3,
-   "start": 14.805,
-   "end": 15.165
+   "start": 14.36,
+   "end": 14.48
   },
   {
    "cap": "aapko",
    "emph": false,
    "scene": 3,
-   "start": 15.205,
-   "end": 15.61
+   "start": 14.54,
+   "end": 14.76
   },
   {
    "cap": "sirf",
    "emph": false,
    "scene": 3,
-   "start": 15.65,
-   "end": 16.01
+   "start": 14.78,
+   "end": 15.04
   },
   {
    "cap": "teen",
    "emph": true,
    "scene": 3,
-   "start": 16.05,
-   "end": 16.41
+   "start": 15.12,
+   "end": 15.36
   },
   {
    "cap": "dikhaunga.",
    "emph": false,
    "scene": 3,
-   "start": 16.45,
-   "end": 17.08
+   "start": 15.4,
+   "end": 15.92
   },
   {
    "cap": "Jo",
    "emph": false,
    "scene": 4,
-   "start": 17.36,
-   "end": 17.63
+   "start": 16.28,
+   "end": 16.72
   },
   {
    "cap": "kaam",
    "emph": false,
    "scene": 4,
-   "start": 17.67,
-   "end": 18.03
+   "start": 16.76,
+   "end": 16.88
   },
   {
    "cap": "pehle",
    "emph": false,
    "scene": 4,
-   "start": 18.07,
-   "end": 18.475
+   "start": 16.96,
+   "end": 17.36
   },
   {
    "cap": "10",
    "emph": true,
    "scene": 4,
-   "start": 18.515,
-   "end": 18.785
+   "start": 17.413,
+   "end": 17.52
   },
   {
    "cap": "ghante",
    "emph": false,
    "scene": 4,
-   "start": 18.825,
-   "end": 19.275
+   "start": 17.6,
+   "end": 17.88
   },
   {
    "cap": "leta",
    "emph": false,
    "scene": 4,
-   "start": 19.315,
-   "end": 19.675
+   "start": 17.9,
+   "end": 18.16
   },
   {
    "cap": "tha,",
    "emph": false,
    "scene": 4,
-   "start": 19.715,
-   "end": 20.075
+   "start": 18.2,
+   "end": 18.48
   },
   {
    "cap": "ab",
    "emph": false,
    "scene": 4,
-   "start": 20.355,
-   "end": 20.625
+   "start": 18.613,
+   "end": 18.88
   },
   {
    "cap": "wo",
    "emph": false,
    "scene": 4,
-   "start": 20.665,
-   "end": 20.935
+   "start": 18.92,
+   "end": 19.04
   },
   {
    "cap": "4",
    "emph": true,
    "scene": 4,
-   "start": 20.975,
-   "end": 21.2
+   "start": 19.16,
+   "end": 19.44
   },
   {
    "cap": "minute",
    "emph": false,
    "scene": 4,
-   "start": 21.24,
-   "end": 21.69
+   "start": 19.48,
+   "end": 19.76
   },
   {
    "cap": "mein",
    "emph": false,
    "scene": 4,
-   "start": 21.73,
-   "end": 22.09
+   "start": 19.8,
+   "end": 19.88
   },
   {
    "cap": "hota",
    "emph": false,
    "scene": 4,
-   "start": 22.13,
-   "end": 22.49
+   "start": 19.9,
+   "end": 20.2
   },
   {
    "cap": "hai.",
    "emph": false,
    "scene": 4,
-   "start": 22.53,
-   "end": 22.89
+   "start": 20.22,
+   "end": 20.32
   },
   {
    "cap": "Pehla",
    "emph": false,
    "scene": 5,
-   "start": 23.17,
-   "end": 23.575
+   "start": 20.54,
+   "end": 21.2
   },
   {
    "cap": "command:",
    "emph": false,
    "scene": 5,
-   "start": 23.615,
-   "end": 24.155
+   "start": 21.28,
+   "end": 21.76
   },
   {
    "cap": "/ig-viral.",
    "emph": true,
    "scene": 5,
-   "start": 24.435,
-   "end": 25.065
+   "start": 21.92,
+   "end": 23.96
   },
   {
    "cap": "Ye",
    "emph": false,
    "scene": 5,
-   "start": 25.345,
-   "end": 25.615
+   "start": 24.14,
+   "end": 24.4
   },
   {
    "cap": "mere",
    "emph": false,
    "scene": 5,
-   "start": 25.655,
-   "end": 26.015
+   "start": 24.44,
+   "end": 24.64
   },
   {
    "cap": "niche",
    "emph": false,
    "scene": 5,
-   "start": 26.055,
-   "end": 26.46
+   "start": 24.72,
+   "end": 24.96
   },
   {
    "cap": "ke",
    "emph": false,
    "scene": 5,
-   "start": 26.5,
-   "end": 26.77
+   "start": 25.04,
+   "end": 25.2
   },
   {
    "cap": "viral",
    "emph": false,
    "scene": 5,
-   "start": 26.81,
-   "end": 27.215
+   "start": 25.24,
+   "end": 25.6
   },
   {
    "cap": "reels",
    "emph": false,
    "scene": 5,
-   "start": 27.255,
-   "end": 27.66
+   "start": 25.68,
+   "end": 26
   },
   {
    "cap": "scan",
    "emph": false,
    "scene": 5,
-   "start": 27.7,
-   "end": 28.06
+   "start": 26.08,
+   "end": 26.48
   },
   {
    "cap": "karta",
    "emph": false,
    "scene": 5,
-   "start": 28.1,
-   "end": 28.505
+   "start": 26.56,
+   "end": 26.88
   },
   {
    "cap": "hai,",
    "emph": false,
    "scene": 5,
-   "start": 28.545,
-   "end": 28.905
+   "start": 26.92,
+   "end": 27.04
   },
   {
    "cap": "unka",
    "emph": false,
    "scene": 6,
-   "start": 29.185,
-   "end": 29.545
+   "start": 27.18,
+   "end": 27.68
   },
   {
    "cap": "pattern",
    "emph": false,
    "scene": 6,
-   "start": 29.585,
-   "end": 30.08
+   "start": 27.72,
+   "end": 28.08
   },
   {
    "cap": "todta",
    "emph": false,
    "scene": 6,
-   "start": 30.12,
-   "end": 30.525
+   "start": 28.12,
+   "end": 28.52
   },
   {
    "cap": "hai,",
    "emph": false,
    "scene": 6,
-   "start": 30.565,
-   "end": 30.925
+   "start": 28.54,
+   "end": 28.72
   },
   {
    "cap": "aur",
    "emph": false,
    "scene": 6,
-   "start": 31.205,
-   "end": 31.52
+   "start": 28.853,
+   "end": 29.12
   },
   {
    "cap": "bina",
    "emph": false,
    "scene": 6,
-   "start": 31.56,
-   "end": 31.92
+   "start": 29.2,
+   "end": 29.44
   },
   {
    "cap": "copy",
    "emph": true,
    "scene": 6,
-   "start": 31.96,
-   "end": 32.32
+   "start": 29.48,
+   "end": 29.84
   },
   {
    "cap": "kiye",
    "emph": false,
    "scene": 6,
-   "start": 32.36,
-   "end": 32.72
+   "start": 29.88,
+   "end": 30.08
   },
   {
    "cap": "ek",
    "emph": false,
    "scene": 6,
-   "start": 32.76,
-   "end": 33.03
+   "start": 30.16,
+   "end": 30.32
   },
   {
    "cap": "naya",
    "emph": false,
    "scene": 6,
-   "start": 33.07,
-   "end": 33.43
+   "start": 30.427,
+   "end": 30.72
   },
   {
    "cap": "banger",
    "emph": true,
    "scene": 6,
-   "start": 33.47,
-   "end": 33.92
+   "start": 30.8,
+   "end": 31.12
   },
   {
    "cap": "hook",
    "emph": false,
    "scene": 6,
-   "start": 33.96,
-   "end": 34.32
+   "start": 31.2,
+   "end": 31.36
   },
   {
    "cap": "likhta",
    "emph": false,
    "scene": 6,
-   "start": 34.36,
-   "end": 34.81
+   "start": 31.4,
+   "end": 31.76
   },
   {
    "cap": "hai.",
    "emph": false,
    "scene": 6,
-   "start": 34.85,
-   "end": 35.21
+   "start": 31.8,
+   "end": 32
   },
   {
    "cap": "Dusra",
    "emph": false,
    "scene": 7,
-   "start": 35.49,
-   "end": 35.895
+   "start": 32.36,
+   "end": 33.12
   },
   {
    "cap": "command:",
    "emph": false,
    "scene": 7,
-   "start": 35.935,
-   "end": 36.475
+   "start": 33.173,
+   "end": 33.441
   },
   {
    "cap": "/ig-comment.",
    "emph": true,
    "scene": 7,
-   "start": 36.755,
-   "end": 37.475
+   "start": 33.68,
+   "end": 35.88
   },
   {
    "cap": "Har",
    "emph": false,
    "scene": 7,
-   "start": 37.755,
-   "end": 38.07
+   "start": 36,
+   "end": 36.24
   },
   {
    "cap": "comment",
    "emph": false,
    "scene": 7,
-   "start": 38.11,
-   "end": 38.605
+   "start": 36.32,
+   "end": 36.64
   },
   {
    "cap": "ka",
    "emph": false,
    "scene": 7,
-   "start": 38.645,
-   "end": 38.915
+   "start": 36.68,
+   "end": 36.76
   },
   {
    "cap": "reply,",
    "emph": false,
    "scene": 7,
-   "start": 38.955,
-   "end": 39.405
+   "start": 36.78,
+   "end": 37.201
   },
   {
    "cap": "bilkul",
    "emph": false,
    "scene": 7,
-   "start": 39.685,
-   "end": 40.135
+   "start": 37.4,
+   "end": 37.92
   },
   {
    "cap": "meri",
    "emph": true,
    "scene": 7,
-   "start": 40.175,
-   "end": 40.535
+   "start": 37.96,
+   "end": 38.16
   },
   {
    "cap": "style",
    "emph": false,
    "scene": 7,
-   "start": 40.575,
-   "end": 40.98
+   "start": 38.2,
+   "end": 38.48
   },
   {
    "cap": "mein.",
    "emph": false,
    "scene": 7,
-   "start": 41.02,
-   "end": 41.425
+   "start": 38.52,
+   "end": 38.72
   },
   {
    "cap": "Mujhe",
    "emph": false,
    "scene": 8,
-   "start": 41.705,
-   "end": 42.11
+   "start": 39,
+   "end": 39.56
   },
   {
    "cap": "bas",
    "emph": false,
    "scene": 8,
-   "start": 42.15,
-   "end": 42.465
+   "start": 39.6,
+   "end": 39.68
   },
   {
    "cap": "approve",
    "emph": true,
    "scene": 8,
-   "start": 42.505,
-   "end": 43
+   "start": 39.76,
+   "end": 40.16
   },
   {
    "cap": "karna",
    "emph": false,
    "scene": 8,
-   "start": 43.04,
-   "end": 43.445
+   "start": 40.22,
+   "end": 40.48
   },
   {
    "cap": "hota",
    "emph": false,
    "scene": 8,
-   "start": 43.485,
-   "end": 43.845
+   "start": 40.54,
+   "end": 40.76
   },
   {
    "cap": "hai.",
    "emph": false,
    "scene": 8,
-   "start": 43.885,
-   "end": 44.245
+   "start": 40.78,
+   "end": 40.88
   },
   {
    "cap": "Aur",
    "emph": false,
    "scene": 9,
-   "start": 44.525,
-   "end": 44.84
+   "start": 41.12,
+   "end": 41.6
   },
   {
    "cap": "teesra",
    "emph": false,
    "scene": 9,
-   "start": 44.88,
-   "end": 45.33
+   "start": 41.72,
+   "end": 42.28
   },
   {
    "cap": "command",
    "emph": false,
    "scene": 9,
-   "start": 45.37,
-   "end": 45.865
+   "start": 42.32,
+   "end": 42.92
   },
   {
    "cap": "sabse",
    "emph": false,
    "scene": 9,
-   "start": 45.905,
-   "end": 46.31
+   "start": 43.01,
+   "end": 43.32
   },
   {
    "cap": "khatarnaak",
    "emph": true,
    "scene": 9,
-   "start": 46.35,
-   "end": 46.98
+   "start": 43.34,
+   "end": 43.84
   },
   {
    "cap": "hai.",
    "emph": false,
    "scene": 9,
-   "start": 47.02,
-   "end": 47.38
+   "start": 43.88,
+   "end": 44.08
   },
   {
    "cap": "/ig-plan.",
    "emph": true,
    "scene": 10,
-   "start": 47.66,
-   "end": 48.245
+   "start": 44.32,
+   "end": 46.36
   },
   {
    "cap": "Ek",
    "emph": false,
    "scene": 10,
-   "start": 48.525,
-   "end": 48.795
+   "start": 46.48,
+   "end": 46.72
   },
   {
    "cap": "click",
    "emph": false,
    "scene": 10,
-   "start": 48.835,
-   "end": 49.24
+   "start": 46.76,
+   "end": 46.96
   },
   {
    "cap": "mein",
    "emph": false,
    "scene": 10,
-   "start": 49.28,
-   "end": 49.64
+   "start": 47,
+   "end": 47.12
   },
   {
    "cap": "poore",
    "emph": false,
    "scene": 10,
-   "start": 49.68,
-   "end": 50.085
+   "start": 47.2,
+   "end": 47.52
   },
   {
    "cap": "hafte",
    "emph": false,
    "scene": 10,
-   "start": 50.125,
-   "end": 50.53
+   "start": 47.56,
+   "end": 47.84
   },
   {
    "cap": "ka",
    "emph": false,
    "scene": 10,
-   "start": 50.57,
-   "end": 50.84
+   "start": 47.88,
+   "end": 48
   },
   {
    "cap": "content",
    "emph": false,
    "scene": 10,
-   "start": 50.88,
-   "end": 51.375
+   "start": 48.04,
+   "end": 48.48
   },
   {
    "cap": "calendar,",
    "emph": false,
    "scene": 10,
-   "start": 51.415,
-   "end": 52
+   "start": 48.52,
+   "end": 48.961
   },
   {
    "cap": "scripts",
    "emph": false,
    "scene": 10,
-   "start": 52.28,
-   "end": 52.775
+   "start": 49.12,
+   "end": 49.68
   },
   {
    "cap": "aur",
    "emph": false,
    "scene": 10,
-   "start": 52.815,
-   "end": 53.13
+   "start": 49.84,
+   "end": 50.16
   },
   {
    "cap": "SEO",
    "emph": true,
    "scene": 10,
-   "start": 53.17,
-   "end": 53.485
+   "start": 50.34,
+   "end": 50.88
   },
   {
    "cap": "captions",
    "emph": false,
    "scene": 10,
-   "start": 53.525,
-   "end": 54.065
+   "start": 51,
+   "end": 51.44
   },
   {
    "cap": "ready.",
    "emph": false,
    "scene": 10,
-   "start": 54.105,
-   "end": 54.555
+   "start": 51.52,
+   "end": 51.92
   },
   {
    "cap": "Ab",
    "emph": false,
    "scene": 11,
-   "start": 54.835,
-   "end": 55.105
+   "start": 52.133,
+   "end": 52.56
   },
   {
    "cap": "kabhi",
    "emph": false,
    "scene": 11,
-   "start": 55.145,
-   "end": 55.55
+   "start": 52.64,
+   "end": 52.88
   },
   {
    "cap": "nahi",
    "emph": false,
    "scene": 11,
-   "start": 55.59,
-   "end": 55.95
+   "start": 52.907,
+   "end": 53.04
   },
   {
    "cap": "sochna",
    "emph": false,
    "scene": 11,
-   "start": 55.99,
-   "end": 56.44
+   "start": 53.08,
+   "end": 53.44
   },
   {
    "cap": "padta",
    "emph": false,
    "scene": 11,
-   "start": 56.48,
-   "end": 56.885
+   "start": 53.467,
+   "end": 53.76
   },
   {
    "cap": "ki",
    "emph": false,
    "scene": 11,
-   "start": 56.925,
-   "end": 57.195
+   "start": 53.8,
+   "end": 53.92
   },
   {
    "cap": "aaj",
    "emph": true,
    "scene": 11,
-   "start": 57.235,
-   "end": 57.55
+   "start": 54.053,
+   "end": 54.32
   },
   {
    "cap": "kya",
    "emph": true,
    "scene": 11,
-   "start": 57.59,
-   "end": 57.905
+   "start": 54.34,
+   "end": 54.48
   },
   {
    "cap": "post",
    "emph": true,
    "scene": 11,
-   "start": 57.945,
-   "end": 58.305
+   "start": 54.56,
+   "end": 54.8
   },
   {
    "cap": "karun?",
    "emph": true,
    "scene": 11,
-   "start": 58.345,
-   "end": 58.795
+   "start": 54.853,
+   "end": 55.36
   },
   {
    "cap": "Ye",
    "emph": false,
    "scene": 12,
-   "start": 59.075,
-   "end": 59.345
+   "start": 55.52,
+   "end": 55.76
   },
   {
    "cap": "reel",
    "emph": false,
    "scene": 12,
-   "start": 59.385,
-   "end": 59.745
+   "start": 55.8,
+   "end": 56
   },
   {
    "cap": "abhi",
    "emph": true,
    "scene": 12,
-   "start": 59.785,
-   "end": 60.145
+   "start": 56.08,
+   "end": 56.32
   },
   {
    "cap": "save",
    "emph": true,
    "scene": 12,
-   "start": 60.185,
-   "end": 60.545
+   "start": 56.36,
+   "end": 56.56
   },
   {
    "cap": "karo.",
    "emph": false,
    "scene": 12,
-   "start": 60.585,
-   "end": 60.99
+   "start": 56.613,
+   "end": 56.8
   },
   {
    "cap": "Aur",
    "emph": false,
    "scene": 13,
-   "start": 61.27,
-   "end": 61.585
+   "start": 57.04,
+   "end": 57.52
   },
   {
    "cap": "agar",
    "emph": false,
    "scene": 13,
-   "start": 61.625,
-   "end": 61.985
+   "start": 57.56,
+   "end": 57.68
   },
   {
    "cap": "13",
    "emph": false,
    "scene": 13,
-   "start": 62.025,
-   "end": 62.295
+   "start": 57.8,
+   "end": 58.16
   },
   {
    "cap": "skills",
    "emph": false,
    "scene": 13,
-   "start": 62.335,
-   "end": 62.785
+   "start": 58.2,
+   "end": 58.56
   },
   {
    "cap": "ka",
    "emph": false,
    "scene": 13,
-   "start": 62.825,
-   "end": 63.095
+   "start": 58.64,
+   "end": 59.04
   },
   {
    "cap": "exact",
    "emph": false,
    "scene": 13,
-   "start": 63.135,
-   "end": 63.54
+   "start": 59.093,
+   "end": 59.36
   },
   {
    "cap": "setup",
    "emph": false,
    "scene": 13,
-   "start": 63.58,
-   "end": 63.985
+   "start": 59.44,
+   "end": 59.787
   },
   {
    "cap": "chahiye,",
    "emph": false,
    "scene": 13,
-   "start": 64.025,
-   "end": 64.565
+   "start": 59.813,
+   "end": 60.24
   },
   {
    "cap": "toh",
    "emph": false,
    "scene": 13,
-   "start": 64.845,
-   "end": 65.16
+   "start": 60.4,
+   "end": 60.68
   },
   {
    "cap": "comment",
    "emph": false,
    "scene": 13,
-   "start": 65.2,
-   "end": 65.695
+   "start": 60.72,
+   "end": 61
   },
   {
    "cap": "karo",
    "emph": false,
    "scene": 13,
-   "start": 65.735,
-   "end": 66.095
+   "start": 61.04,
+   "end": 61.121
   },
   {
    "cap": "AGENT.",
    "emph": true,
    "scene": 13,
-   "start": 66.135,
-   "end": 66.585
+   "start": 61.2,
+   "end": 61.84
   },
   {
    "cap": "Link",
    "emph": false,
    "scene": 14,
-   "start": 66.865,
-   "end": 67.225
+   "start": 62,
+   "end": 62.4
   },
   {
    "cap": "seedha",
    "emph": false,
    "scene": 14,
-   "start": 67.265,
-   "end": 67.715
+   "start": 62.48,
+   "end": 62.8
   },
   {
    "cap": "DM",
    "emph": true,
    "scene": 14,
-   "start": 67.755,
-   "end": 68.025
+   "start": 62.907,
+   "end": 63.12
   },
   {
    "cap": "mein",
    "emph": false,
    "scene": 14,
-   "start": 68.065,
-   "end": 68.425
+   "start": 63.16,
+   "end": 63.28
   },
   {
    "cap": "bhej",
    "emph": false,
    "scene": 14,
-   "start": 68.465,
-   "end": 68.825
+   "start": 63.32,
+   "end": 63.52
   },
   {
    "cap": "dunga.",
    "emph": false,
    "scene": 14,
-   "start": 68.865,
-   "end": 69.315
+   "start": 63.56,
+   "end": 63.92
   }
  ]
 }
