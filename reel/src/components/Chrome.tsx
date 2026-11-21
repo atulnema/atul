@@ -332,3 +332,49 @@ export const AvatarRig: React.FC = () => {
 };
 
 export { sceneFrames };
+
+/* ------------------------------------------------------------------ */
+/* Handle badge (bottom-left)                                          */
+/* ------------------------------------------------------------------ */
+export const HandleBadge: React.FC<{ handle: string }> = ({ handle }) => {
+  const p = useSpring(10, 14, 140);
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: 48,
+        bottom: 64,
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+        background: "rgba(255,255,255,0.85)",
+        border: `1.5px solid ${C.line}`,
+        borderRadius: 999,
+        padding: "14px 26px 14px 16px",
+        boxShadow: "0 10px 26px rgba(0,0,0,0.08)",
+        fontFamily: F.sans,
+        fontWeight: 800,
+        fontSize: 32,
+        color: C.ink,
+        opacity: p,
+        transform: `translateY(${(1 - p) * 30}px)`,
+      }}
+    >
+      <div
+        style={{
+          width: 46,
+          height: 46,
+          borderRadius: 14,
+          background: "linear-gradient(135deg, #F7B24A, #E1306C 55%, #8A3AB9)",
+          display: "grid",
+          placeItems: "center",
+        }}
+      >
+        <div style={{ width: 24, height: 24, borderRadius: 8, border: "3.5px solid #fff", display: "grid", placeItems: "center" }}>
+          <div style={{ width: 8, height: 8, borderRadius: 8, border: "3px solid #fff" }} />
+        </div>
+      </div>
+      {handle}
+    </div>
+  );
+};

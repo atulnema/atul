@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { AbsoluteFill, Audio, Sequence, continueRender, delayRender, staticFile } from "remotion";
-import { Background, Headline, Captions, AvatarRig } from "./components/Chrome";
+import { Background, Headline, Captions, AvatarRig, HandleBadge } from "./components/Chrome";
 import { CARDS } from "./cards";
 import { SceneProvider, sceneFrames, timing } from "./timing";
 import { sfxCues } from "./sfx";
@@ -37,6 +37,7 @@ export const Reel: React.FC = () => {
         );
       })}
       <Captions />
+      <HandleBadge handle="@alphastrix_" />
       <AvatarRig />
       {timing.hasAudio && <Audio src={staticFile("voice.mp3")} />}
       {sfxCues.map((c, i) => (
