@@ -187,7 +187,7 @@ export const AvatarRig: React.FC = () => {
   const frame = useCurrentFrame();
   const think = sceneById("think");
   const tIn = ease(frame, think.from - 4, think.from + 14);
-  const tOut = ease(frame, think.from + think.dur - 10, think.from + think.dur + 6);
+  const tOut = ease(frame, think.from + think.dur - 2, think.from + think.dur + 9);
   const big = tIn * (1 - tOut);
 
   // corner rig vs centre rig
@@ -196,8 +196,9 @@ export const AvatarRig: React.FC = () => {
   const top = interpolate(big, [0, 1], [H - 440, 470]);
   const bob = Math.sin(frame / 22) * 4;
 
-  const plannedAt = wordFrameGlobal("think", "karun", think.from + 40) + 4;
-  const planned = ease(frame, plannedAt, plannedAt + 10) * (1 - tOut);
+  const plannedAt = wordFrameGlobal("think", "post", think.from + 40);
+  const plannedRaw = ease(frame, plannedAt, plannedAt + 8);
+  const planned = plannedRaw * (1 - Math.min(1, tOut * 2.5));
   const thinking = big > 0.5 && frame < plannedAt;
 
   const introP = useSpring(2, 13, 120);
@@ -250,7 +251,7 @@ export const AvatarRig: React.FC = () => {
 
           {/* thought bubble */}
           {big > 0.02 && (
-            <div style={{ position: "absolute", left: 0, top: 0, opacity: big * (1 - planned) }}>
+            <div style={{ position: "absolute", left: 0, top: 0, opacity: big * (1 - plannedRaw) * (1 - Math.min(1, tOut * 3)) }}>
               {[
                 { x: 770, y: 720, s: 26 },
                 { x: 815, y: 655, s: 42 },

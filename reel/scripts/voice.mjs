@@ -2,6 +2,7 @@
 //
 //   node scripts/voice.mjs --voice <voice_id> [--model eleven_multilingual_v2]
 //   node scripts/voice.mjs --estimate     (no API call: fake timing for layout work)
+//   node scripts/voice.mjs --audio my_take.mp3   (align your own MP3 recording to the script, 1:1 words)
 //
 // The API key is read from ELEVENLABS_API_KEY (sent as the xi-api-key header).
 import fs from "node:fs";
@@ -63,8 +64,40 @@ if (estimate) {
   process.exit(0);
 }
 
+// ---- Own recording: transcribe with word timestamps, map 1:1 onto the script --
+const audioIn = arg("audio");
+if (audioIn) {
+  const form = new FormData();
+  form.append("file", new Blob([fs.readFileSync(audioIn)], { type: "audio/mpeg" }), "voice.mp3");
+  form.append("model_id", "scribe_v1");
+  form.append("language_code", arg("lang", "hin"));
+  form.append("timestamps_granularity", "word");
+  const r = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
+    method: "POST",
+    headers: { "xi-api-key": process.env.ELEVENLABS_API_KEY ?? "proxy-injected" },
+    body: form,
+  });
+  if (!r.ok) {
+    console.error(r.status, await r.text());
+    process.exit(1);
+  }
+  const stt = await r.json();
+  const heard = stt.words.filter((w) => w.type === "word");
+  if (heard.length !== tokens.length) {
+    console.error(`Recording has ${heard.length} words, script has ${tokens.length}. They must match 1:1.`);
+    console.error("Heard:", stt.text);
+    process.exit(1);
+  }
+  fs.mkdirSync(path.dirname(outAudio), { recursive: true });
+  fs.copyFileSync(audioIn, outAudio);
+  const words = tokens.map((tk, i) => ({ cap: tk.cap, emph: tk.emph, scene: tk.scene, start: heard[i].start, end: heard[i].end }));
+  writeTiming(words, heard[heard.length - 1].end + 0.9, true);
+  console.log(`aligned ${audioIn} -> ${outAudio}`);
+  process.exit(0);
+}
+
 if (!voiceId) {
-  console.error("Missing --voice <voice_id>");
+  console.error("Missing --voice <voice_id> (or --audio <file.mp3> to align your own recording)");
   process.exit(1);
 }
 
