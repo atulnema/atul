@@ -1,0 +1,54 @@
+{
+  "_format": "Each word is caption|tts. A leading * marks a highlighted (crimson) caption word. Underscores in the tts part become spaces.",
+  "scenes": [
+    {
+      "id": "done",
+      "title": "Kaam Ho Gaya",
+      "sub": "Client Khush.",
+      "words": "Kaam|काम ho|हो gaya.|गया। Client|क्लाइंट khush.|ख़ुश। *Payment?|पेमेंट?"
+    },
+    {
+      "id": "kal",
+      "title": "“Kal Kar Deta Hoon”",
+      "sub": "Day 3… Day 12… Day 27",
+      "words": "Haan|हाँ bhai,|भाई, *kal|कल kar|कर deta|देता hoon.|हूँ।"
+    },
+    {
+      "id": "rude",
+      "title": "Dobara Poochun?",
+      "sub": "Rude Lagega…",
+      "center": {},
+      "words": "Aur|और aap|आप soch|सोच rahe|रहे ho,|हो, dobara|दोबारा poochun|पूछूँ toh|तो *rude|रूड lagega?|लगेगा?"
+    },
+    {
+      "id": "wrong",
+      "title": "Problem Poochna Nahi",
+      "sub": "Galat Message Hai",
+      "words": "Problem|प्रॉब्लम poochna|पूछना nahi|नहीं hai.|है। Problem|प्रॉब्लम hai|है *galat|ग़लत message,|मैसेज, galat|ग़लत time|टाइम pe.|पे।"
+    },
+    {
+      "id": "ladder",
+      "title": "Sahi Message",
+      "sub": "Sahi Time Pe",
+      "words": "Pehle|पहले hafte:|हफ़्ते: *friendly|फ्रेंडली reminder.|रिमाइंडर। Dusre|दूसरे hafte:|हफ़्ते: ek|एक *date|डेट maango.|माँगो। Mahine|महीने baad:|बाद: *final|फ़ाइनल notice,|नोटिस, deadline|डेडलाइन ke|के saath.|साथ।"
+    },
+    {
+      "id": "upi",
+      "title": "Har Message Mein",
+      "sub": "Amount · Invoice · UPI",
+      "words": "Aur|और har|हर message|मैसेज mein|में amount,|अमाउंट, invoice|इनवॉइस number,|नंबर, aur|और *UPI|यूपीआई ID.|आईडी। Taaki|ताकि pay|पे karna|करना *ek|एक *tap|टैप ho.|हो।"
+    },
+    {
+      "id": "tool",
+      "title": "Free Tool",
+      "sub": "Naam Daalo, Message Ready",
+      "words": "Maine|मैंने ek|एक *free|फ़्री tool|टूल banaya|बनाया hai.|है। Naam|नाम aur|और amount|अमाउंट daalo,|डालो, sahi|सही message|मैसेज ready.|रेडी।"
+    },
+    {
+      "id": "cta",
+      "title": "Comment Karo",
+      "sub": "“PAYMENT”",
+      "words": "Chahiye?|चाहिए? Comment|कमेंट karo|करो *PAYMENT.|पेमेंट। Aur|और us|उस dost|दोस्त ko|को bhejo,|भेजो, jiska|जिसका *paisa|पैसा atka|अटका hai.|है।"
+    }
+  ]
+}
