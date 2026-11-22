@@ -9,31 +9,102 @@ import { Avatar } from "./Avatar";
 /* ------------------------------------------------------------------ */
 /* Background                                                          */
 /* ------------------------------------------------------------------ */
-export const Background: React.FC = () => (
-  <AbsoluteFill
-    style={{
-      background: `radial-gradient(120% 70% at 50% 30%, ${C.bg2} 0%, ${C.bg} 55%, #E2E1DD 100%)`,
-    }}
-  />
-);
+export const Background: React.FC<{ variant?: string }> = ({ variant }) => {
+  const frame = useCurrentFrame();
+  const reel = useReel();
+  if (variant !== "ledger") {
+    return (
+      <AbsoluteFill
+        style={{
+          background: `radial-gradient(120% 70% at 50% 30%, ${C.bg2} 0%, ${C.bg} 55%, #E2E1DD 100%)`,
+        }}
+      />
+    );
+  }
+  // Ledger paper: faint ruled lines drifting slowly, a red margin rule, and a soft
+  // glow that moves to a new spot each scene.
+  const idx = Math.max(0, reel.sceneFrames.findIndex((s, i) => frame >= s.from && frame < s.from + s.dur));
+  const spots = [
+    [30, 25], [72, 30], [50, 55], [25, 60], [70, 52], [40, 35], [62, 40], [45, 28],
+  ];
+  const cur = spots[idx % spots.length];
+  const sc = reel.sceneFrames[idx];
+  const prev = spots[(idx + spots.length - 1) % spots.length];
+  const k = sc ? ease(frame, sc.from, sc.from + 24) : 1;
+  const gx = prev[0] + (cur[0] - prev[0]) * k;
+  const gy = prev[1] + (cur[1] - prev[1]) * k;
+  const drift = (frame * 0.6) % 72;
+  return (
+    <AbsoluteFill style={{ background: "#F3F1EC", overflow: "hidden" }}>
+      <AbsoluteFill
+        style={{
+          background: `radial-gradient(42% 30% at ${gx}% ${gy}%, rgba(212,35,77,0.10), transparent 70%)`,
+        }}
+      />
+      <AbsoluteFill
+        style={{
+          top: -72,
+          height: H + 144,
+          transform: `translateY(${drift}px)`,
+          backgroundImage: "repeating-linear-gradient(to bottom, transparent 0 70px, rgba(40,60,120,0.085) 70px 72px)",
+        }}
+      />
+      <div style={{ position: "absolute", top: 0, bottom: 0, left: 96, width: 3, background: "rgba(212,35,77,0.18)" }} />
+      <AbsoluteFill style={{ background: "radial-gradient(130% 80% at 50% 40%, transparent 55%, rgba(0,0,0,0.06) 100%)" }} />
+    </AbsoluteFill>
+  );
+};
 
 /* ------------------------------------------------------------------ */
 /* Headline (top): bold sans title + crimson italic serif sub          */
+/* variant: 0 rise · 1 typewriter · 2 mask slide · 3 scale pop · 4 split */
 /* ------------------------------------------------------------------ */
-export const Headline: React.FC<{ title: string; sub: string; chip?: string; dur: number }> = ({ title, sub, chip, dur }) => {
+export const Headline: React.FC<{ title: string; sub: string; chip?: string; dur: number; variant?: number }> = ({
+  title,
+  sub,
+  chip,
+  dur,
+  variant = 0,
+}) => {
   const frame = useCurrentFrame();
   const inT = useSpring(0, 15, 160);
   const inS = useSpring(5, 15, 160);
   const out = ease(frame, dur - 8, dur, 0, 1);
-  const line = (p: number): React.CSSProperties => ({
-    opacity: Math.min(1, p * 1.3) * (1 - out),
-    transform: `translateY(${(1 - p) * 34 - out * 24}px)`,
-    filter: `blur(${(1 - p) * 10 + out * 8}px)`,
-  });
+  const v = variant % 5;
+  const line = (p: number, side = 0): React.CSSProperties => {
+    const base: React.CSSProperties = { opacity: (1 - out) };
+    if (v === 2) {
+      return {
+        ...base,
+        clipPath: `inset(0 ${(1 - Math.min(1, p)) * 100}% 0 0)`,
+        transform: `translateX(${(1 - p) * -40}px) translateY(${-out * 24}px)`,
+      };
+    }
+    if (v === 3) {
+      return {
+        ...base,
+        opacity: Math.min(1, p * 1.6) * (1 - out),
+        transform: `scale(${0.5 + p * 0.5}) translateY(${-out * 24}px)`,
+      };
+    }
+    if (v === 4) {
+      return {
+        ...base,
+        opacity: Math.min(1, p * 1.4) * (1 - out),
+        transform: `translateX(${(1 - p) * 420 * side}px) translateY(${-out * 24}px)`,
+      };
+    }
+    return {
+      opacity: Math.min(1, p * 1.3) * (1 - out),
+      transform: `translateY(${(1 - p) * 34 - out * 24}px)`,
+      filter: `blur(${(1 - p) * 10 + out * 8}px)`,
+    };
+  };
+  const shownTitle = v === 1 ? title.slice(0, Math.max(0, Math.floor(frame * 1.6))) : title;
   return (
     <div style={{ position: "absolute", top: 120, left: 60, right: 60, textAlign: "center" }}>
       {chip && (
-        <div style={{ ...line(inT), marginBottom: 18 }}>
+        <div style={{ ...line(inT, -1), marginBottom: 18 }}>
           <span
             style={{
               fontFamily: F.sans,
@@ -51,12 +122,26 @@ export const Headline: React.FC<{ title: string; sub: string; chip?: string; dur
           </span>
         </div>
       )}
-      <div style={{ ...line(inT), fontFamily: F.sans, fontWeight: 800, fontSize: 74, color: C.ink, letterSpacing: -2, lineHeight: 1.08 }}>
-        {title}
+      <div
+        style={{
+          ...(v === 1 ? { opacity: 1 - out, transform: `translateY(${-out * 24}px)` } : line(inT, -1)),
+          fontFamily: F.sans,
+          fontWeight: 800,
+          fontSize: 74,
+          color: C.ink,
+          letterSpacing: -2,
+          lineHeight: 1.08,
+          minHeight: 80,
+        }}
+      >
+        {shownTitle}
+        {v === 1 && shownTitle.length < title.length && (
+          <span style={{ display: "inline-block", width: 6, height: 64, background: C.crimson, marginLeft: 6, verticalAlign: "-6px" }} />
+        )}
       </div>
       <div
         style={{
-          ...line(inS),
+          ...line(v === 1 ? ease(frame, title.length / 1.6, title.length / 1.6 + 10) : inS, 1),
           fontFamily: F.serif,
           fontStyle: "italic",
           fontWeight: 500,

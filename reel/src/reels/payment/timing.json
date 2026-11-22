@@ -1,46 +1,46 @@
 {
  "hasAudio": true,
- "duration": 44.9,
+ "duration": 34.32,
  "scenes": [
   {
    "id": "done",
-   "start": 0,
-   "end": 2.92
+   "start": 0.36,
+   "end": 2.9
   },
   {
    "id": "kal",
-   "start": 3.06,
-   "end": 8.16
+   "start": 3.48,
+   "end": 4.96
   },
   {
    "id": "rude",
-   "start": 8.293,
-   "end": 11.68
+   "start": 5.02,
+   "end": 7.62
   },
   {
    "id": "wrong",
-   "start": 11.84,
-   "end": 16.56
+   "start": 8.28,
+   "end": 12.44
   },
   {
    "id": "ladder",
-   "start": 16.78,
-   "end": 26.24
+   "start": 12.48,
+   "end": 19
   },
   {
    "id": "upi",
-   "start": 26.373,
-   "end": 33.2
+   "start": 19.48,
+   "end": 24.56
   },
   {
    "id": "tool",
-   "start": 33.52,
-   "end": 38.4
+   "start": 25.22,
+   "end": 29.46
   },
   {
    "id": "cta",
-   "start": 38.68,
-   "end": 44
+   "start": 29.52,
+   "end": 33.42
   }
  ],
  "words": [
@@ -48,680 +48,638 @@
    "cap": "Kaam",
    "emph": false,
    "scene": 0,
-   "start": 0,
-   "end": 0.24
+   "start": 0.36,
+   "end": 0.58
   },
   {
    "cap": "ho",
    "emph": false,
    "scene": 0,
-   "start": 0.28,
-   "end": 0.4
+   "start": 0.64,
+   "end": 0.72
   },
   {
    "cap": "gaya.",
    "emph": false,
    "scene": 0,
-   "start": 0.427,
-   "end": 0.64
+   "start": 0.78,
+   "end": 0.94
   },
   {
    "cap": "Client",
    "emph": false,
    "scene": 0,
-   "start": 0.84,
-   "end": 1.36
+   "start": 1.34,
+   "end": 1.64
   },
   {
    "cap": "khush.",
    "emph": false,
    "scene": 0,
-   "start": 1.4,
-   "end": 2
+   "start": 1.76,
+   "end": 2.52
   },
   {
    "cap": "Payment?",
    "emph": true,
    "scene": 0,
-   "start": 2.16,
-   "end": 2.92
+   "start": 2.56,
+   "end": 2.9
   },
   {
    "cap": "Haan",
    "emph": false,
    "scene": 1,
-   "start": 3.06,
-   "end": 3.28
+   "start": 3.48,
+   "end": 3.62
   },
   {
    "cap": "bhai,",
    "emph": false,
    "scene": 1,
-   "start": 3.32,
-   "end": 3.6
+   "start": 3.66,
+   "end": 3.78
   },
   {
    "cap": "kal",
    "emph": true,
    "scene": 1,
-   "start": 3.627,
-   "end": 3.68
+   "start": 3.88,
+   "end": 3.98
   },
   {
    "cap": "kar",
    "emph": false,
    "scene": 1,
-   "start": 3.76,
-   "end": 3.92
+   "start": 4.04,
+   "end": 4.14
   },
   {
    "cap": "deta",
    "emph": false,
    "scene": 1,
-   "start": 3.96,
-   "end": 4.2
+   "start": 4.18,
+   "end": 4.36
   },
   {
    "cap": "hoon.",
    "emph": false,
    "scene": 1,
-   "start": 4.22,
-   "end": 4.64
-  },
-  {
-   "cap": "Teen",
-   "emph": false,
-   "scene": 1,
-   "start": 4.8,
-   "end": 5.04
-  },
-  {
-   "cap": "din.",
-   "emph": false,
-   "scene": 1,
-   "start": 5.12,
-   "end": 5.68
-  },
-  {
-   "cap": "Baarah",
-   "emph": false,
-   "scene": 1,
-   "start": 5.84,
-   "end": 6.24
-  },
-  {
-   "cap": "din.",
-   "emph": false,
-   "scene": 1,
-   "start": 6.28,
-   "end": 6.84
-  },
-  {
-   "cap": "Sattaees",
-   "emph": true,
-   "scene": 1,
-   "start": 6.96,
-   "end": 7.52
-  },
-  {
-   "cap": "din.",
-   "emph": false,
-   "scene": 1,
-   "start": 7.56,
-   "end": 8.16
+   "start": 4.38,
+   "end": 4.96
   },
   {
    "cap": "Aur",
    "emph": false,
    "scene": 2,
-   "start": 8.293,
-   "end": 8.56
+   "start": 5.02,
+   "end": 5.1
   },
   {
    "cap": "aap",
    "emph": false,
    "scene": 2,
-   "start": 8.613,
-   "end": 8.72
+   "start": 5.18,
+   "end": 5.34
   },
   {
    "cap": "soch",
    "emph": false,
    "scene": 2,
-   "start": 8.8,
-   "end": 8.96
+   "start": 5.4,
+   "end": 5.6
   },
   {
    "cap": "rahe",
    "emph": false,
    "scene": 2,
-   "start": 9.013,
-   "end": 9.2
+   "start": 5.64,
+   "end": 5.72
   },
   {
    "cap": "ho,",
    "emph": false,
    "scene": 2,
-   "start": 9.28,
-   "end": 9.44
+   "start": 5.74,
+   "end": 5.8
   },
   {
    "cap": "dobara",
    "emph": false,
    "scene": 2,
-   "start": 9.72,
-   "end": 10.24
+   "start": 6.22,
+   "end": 6.54
   },
   {
    "cap": "poochun",
    "emph": false,
    "scene": 2,
-   "start": 10.32,
-   "end": 10.64
+   "start": 6.64,
+   "end": 6.9
   },
   {
    "cap": "toh",
    "emph": false,
    "scene": 2,
-   "start": 10.68,
-   "end": 10.8
+   "start": 6.92,
+   "end": 7.02
   },
   {
    "cap": "rude",
    "emph": true,
    "scene": 2,
-   "start": 10.84,
-   "end": 10.96
+   "start": 7.08,
+   "end": 7.24
   },
   {
    "cap": "lagega?",
    "emph": false,
    "scene": 2,
-   "start": 11.04,
-   "end": 11.68
+   "start": 7.28,
+   "end": 7.62
   },
   {
    "cap": "Problem",
    "emph": false,
    "scene": 3,
-   "start": 11.84,
-   "end": 12.4
+   "start": 8.28,
+   "end": 8.62
   },
   {
    "cap": "poochna",
    "emph": false,
    "scene": 3,
-   "start": 12.44,
-   "end": 12.8
+   "start": 8.72,
+   "end": 9.04
   },
   {
    "cap": "nahi",
    "emph": false,
    "scene": 3,
-   "start": 12.853,
-   "end": 13.04
+   "start": 9.08,
+   "end": 9.2
   },
   {
    "cap": "hai.",
    "emph": false,
    "scene": 3,
-   "start": 13.08,
-   "end": 13.2
+   "start": 9.22,
+   "end": 9.72
   },
   {
    "cap": "Problem",
    "emph": false,
    "scene": 3,
-   "start": 13.52,
-   "end": 14.24
+   "start": 9.76,
+   "end": 10.14
   },
   {
    "cap": "hai",
    "emph": false,
    "scene": 3,
-   "start": 14.28,
-   "end": 14.4
+   "start": 10.2,
+   "end": 10.36
   },
   {
    "cap": "galat",
    "emph": true,
    "scene": 3,
-   "start": 14.48,
-   "end": 14.8
+   "start": 10.44,
+   "end": 10.72
   },
   {
    "cap": "message,",
    "emph": false,
    "scene": 3,
-   "start": 14.92,
-   "end": 15.6
+   "start": 10.76,
+   "end": 11.08
   },
   {
    "cap": "galat",
    "emph": false,
    "scene": 3,
-   "start": 15.72,
-   "end": 16.08
+   "start": 11.22,
+   "end": 11.46
   },
   {
    "cap": "time",
    "emph": false,
    "scene": 3,
-   "start": 16.12,
-   "end": 16.32
+   "start": 11.5,
+   "end": 11.68
   },
   {
    "cap": "pe.",
    "emph": false,
    "scene": 3,
-   "start": 16.4,
-   "end": 16.56
+   "start": 11.76,
+   "end": 12.44
   },
   {
    "cap": "Pehle",
    "emph": false,
    "scene": 4,
-   "start": 16.78,
-   "end": 17.52
+   "start": 12.48,
+   "end": 12.7
   },
   {
    "cap": "hafte:",
    "emph": false,
    "scene": 4,
-   "start": 17.56,
-   "end": 18.267
+   "start": 12.74,
+   "end": 12.96
   },
   {
    "cap": "friendly",
    "emph": true,
    "scene": 4,
-   "start": 18.373,
-   "end": 18.8
+   "start": 13.26,
+   "end": 13.5
   },
   {
    "cap": "reminder.",
    "emph": false,
    "scene": 4,
-   "start": 18.84,
-   "end": 19.707
+   "start": 13.54,
+   "end": 13.88
   },
   {
    "cap": "Dusre",
    "emph": false,
    "scene": 4,
-   "start": 19.813,
-   "end": 20.24
+   "start": 14.36,
+   "end": 14.66
   },
   {
    "cap": "hafte:",
    "emph": false,
    "scene": 4,
-   "start": 20.28,
-   "end": 20.92
+   "start": 14.68,
+   "end": 14.94
   },
   {
    "cap": "ek",
    "emph": false,
    "scene": 4,
-   "start": 21.04,
-   "end": 21.28
+   "start": 15.26,
+   "end": 15.48
   },
   {
    "cap": "date",
    "emph": true,
    "scene": 4,
-   "start": 21.36,
-   "end": 21.6
+   "start": 15.52,
+   "end": 15.72
   },
   {
    "cap": "maango.",
    "emph": false,
    "scene": 4,
-   "start": 21.64,
-   "end": 22
+   "start": 15.8,
+   "end": 16.5
   },
   {
    "cap": "Mahine",
    "emph": false,
    "scene": 4,
-   "start": 22.24,
-   "end": 22.96
+   "start": 16.56,
+   "end": 16.9
   },
   {
    "cap": "baad:",
    "emph": false,
    "scene": 4,
-   "start": 23,
-   "end": 23.48
+   "start": 16.94,
+   "end": 17.14
   },
   {
    "cap": "final",
    "emph": true,
    "scene": 4,
-   "start": 23.62,
-   "end": 24.08
+   "start": 17.44,
+   "end": 17.78
   },
   {
    "cap": "notice,",
    "emph": false,
    "scene": 4,
-   "start": 24.16,
-   "end": 24.8
+   "start": 17.84,
+   "end": 18.16
   },
   {
    "cap": "deadline",
    "emph": false,
    "scene": 4,
-   "start": 24.92,
-   "end": 25.36
+   "start": 18.28,
+   "end": 18.64
   },
   {
    "cap": "ke",
    "emph": false,
    "scene": 4,
-   "start": 25.44,
-   "end": 25.6
+   "start": 18.68,
+   "end": 18.78
   },
   {
    "cap": "saath.",
    "emph": false,
    "scene": 4,
-   "start": 25.64,
-   "end": 26.24
+   "start": 18.8,
+   "end": 19
   },
   {
    "cap": "Aur",
    "emph": false,
    "scene": 5,
-   "start": 26.373,
-   "end": 26.64
+   "start": 19.48,
+   "end": 19.68
   },
   {
    "cap": "har",
    "emph": false,
    "scene": 5,
-   "start": 26.747,
-   "end": 26.96
+   "start": 19.74,
+   "end": 19.94
   },
   {
    "cap": "message",
    "emph": false,
    "scene": 5,
-   "start": 27.04,
-   "end": 27.36
+   "start": 19.98,
+   "end": 20.28
   },
   {
    "cap": "mein",
    "emph": false,
    "scene": 5,
-   "start": 27.4,
-   "end": 27.6
+   "start": 20.32,
+   "end": 20.48
   },
   {
    "cap": "amount,",
    "emph": false,
    "scene": 5,
-   "start": 27.68,
-   "end": 28.44
+   "start": 20.54,
+   "end": 20.96
   },
   {
    "cap": "invoice",
    "emph": false,
    "scene": 5,
-   "start": 28.533,
-   "end": 28.96
+   "start": 21.26,
+   "end": 21.58
   },
   {
    "cap": "number,",
    "emph": false,
    "scene": 5,
-   "start": 29.04,
-   "end": 29.6
+   "start": 21.64,
+   "end": 21.88
   },
   {
    "cap": "aur",
    "emph": false,
    "scene": 5,
-   "start": 29.68,
-   "end": 29.84
+   "start": 22.02,
+   "end": 22.1
   },
   {
    "cap": "UPI",
    "emph": true,
    "scene": 5,
-   "start": 29.96,
-   "end": 30.64
+   "start": 22.28,
+   "end": 22.64
   },
   {
    "cap": "ID.",
    "emph": false,
    "scene": 5,
-   "start": 30.747,
-   "end": 31.12
+   "start": 22.7,
+   "end": 22.9
   },
   {
    "cap": "Taaki",
    "emph": false,
    "scene": 5,
-   "start": 31.44,
-   "end": 32.04
+   "start": 23.22,
+   "end": 23.5
   },
   {
    "cap": "pay",
    "emph": false,
    "scene": 5,
-   "start": 32.1,
-   "end": 32.24
+   "start": 23.54,
+   "end": 23.66
   },
   {
    "cap": "karna",
    "emph": false,
    "scene": 5,
-   "start": 32.3,
-   "end": 32.56
+   "start": 23.72,
+   "end": 24
   },
   {
    "cap": "ek",
    "emph": true,
    "scene": 5,
-   "start": 32.613,
-   "end": 32.72
+   "start": 24.06,
+   "end": 24.2
   },
   {
    "cap": "tap",
    "emph": true,
    "scene": 5,
-   "start": 32.76,
-   "end": 32.96
+   "start": 24.24,
+   "end": 24.44
   },
   {
    "cap": "ho.",
    "emph": false,
    "scene": 5,
-   "start": 33.04,
-   "end": 33.2
+   "start": 24.46,
+   "end": 24.56
   },
   {
    "cap": "Maine",
    "emph": false,
    "scene": 6,
-   "start": 33.52,
-   "end": 34
+   "start": 25.22,
+   "end": 25.36
   },
   {
    "cap": "ek",
    "emph": false,
    "scene": 6,
-   "start": 34.053,
-   "end": 34.16
+   "start": 25.38,
+   "end": 25.5
   },
   {
    "cap": "free",
    "emph": true,
    "scene": 6,
-   "start": 34.2,
-   "end": 34.4
+   "start": 25.54,
+   "end": 25.7
   },
   {
    "cap": "tool",
    "emph": false,
    "scene": 6,
-   "start": 34.48,
-   "end": 34.64
+   "start": 25.74,
+   "end": 25.88
   },
   {
    "cap": "banaya",
    "emph": false,
    "scene": 6,
-   "start": 34.72,
-   "end": 35.08
+   "start": 25.92,
+   "end": 26.16
   },
   {
    "cap": "hai.",
    "emph": false,
    "scene": 6,
-   "start": 35.1,
-   "end": 35.28
+   "start": 26.18,
+   "end": 26.6
   },
   {
    "cap": "Naam",
    "emph": false,
    "scene": 6,
-   "start": 35.52,
-   "end": 36
+   "start": 26.66,
+   "end": 26.86
   },
   {
    "cap": "aur",
    "emph": false,
    "scene": 6,
-   "start": 36.053,
-   "end": 36.16
+   "start": 26.92,
+   "end": 26.98
   },
   {
    "cap": "amount",
    "emph": false,
    "scene": 6,
-   "start": 36.267,
-   "end": 36.64
+   "start": 27.02,
+   "end": 27.3
   },
   {
    "cap": "daalo,",
    "emph": false,
    "scene": 6,
-   "start": 36.72,
-   "end": 37.04
+   "start": 27.32,
+   "end": 27.52
   },
   {
    "cap": "sahi",
    "emph": false,
    "scene": 6,
-   "start": 37.253,
-   "end": 37.76
+   "start": 27.96,
+   "end": 28.2
   },
   {
    "cap": "message",
    "emph": false,
    "scene": 6,
-   "start": 37.8,
-   "end": 38.08
+   "start": 28.26,
+   "end": 28.56
   },
   {
    "cap": "ready.",
    "emph": false,
    "scene": 6,
-   "start": 38.16,
-   "end": 38.4
+   "start": 28.66,
+   "end": 29.46
   },
   {
    "cap": "Chahiye?",
    "emph": false,
    "scene": 7,
-   "start": 38.68,
-   "end": 39.64
+   "start": 29.52,
+   "end": 29.8
   },
   {
    "cap": "Comment",
    "emph": false,
    "scene": 7,
-   "start": 39.76,
-   "end": 40.16
+   "start": 30.24,
+   "end": 30.52
   },
   {
    "cap": "karo",
    "emph": false,
    "scene": 7,
-   "start": 40.187,
-   "end": 40.32
+   "start": 30.56,
+   "end": 30.7
   },
   {
    "cap": "PAYMENT.",
    "emph": true,
    "scene": 7,
-   "start": 40.36,
-   "end": 41.04
+   "start": 30.8,
+   "end": 31.06
   },
   {
    "cap": "Aur",
    "emph": false,
    "scene": 7,
-   "start": 41.147,
-   "end": 41.36
+   "start": 31.46,
+   "end": 31.52
   },
   {
    "cap": "us",
    "emph": false,
    "scene": 7,
-   "start": 41.413,
-   "end": 41.52
+   "start": 31.58,
+   "end": 31.68
   },
   {
    "cap": "dost",
    "emph": false,
    "scene": 7,
-   "start": 41.6,
-   "end": 41.92
+   "start": 31.72,
+   "end": 31.94
   },
   {
    "cap": "ko",
    "emph": false,
    "scene": 7,
-   "start": 41.96,
-   "end": 42.08
+   "start": 31.98,
+   "end": 32.04
   },
   {
    "cap": "bhejo,",
    "emph": false,
    "scene": 7,
-   "start": 42.12,
-   "end": 42.4
+   "start": 32.08,
+   "end": 32.34
   },
   {
    "cap": "jiska",
    "emph": false,
    "scene": 7,
-   "start": 42.6,
-   "end": 43.08
+   "start": 32.38,
+   "end": 32.659
   },
   {
    "cap": "paisa",
    "emph": true,
    "scene": 7,
-   "start": 43.14,
-   "end": 43.44
+   "start": 32.7,
+   "end": 32.96
   },
   {
    "cap": "atka",
    "emph": false,
    "scene": 7,
-   "start": 43.48,
-   "end": 43.76
+   "start": 33,
+   "end": 33.24
   },
   {
    "cap": "hai.",
    "emph": false,
    "scene": 7,
-   "start": 43.8,
-   "end": 44
+   "start": 33.26,
+   "end": 33.42
   }
  ]
 }

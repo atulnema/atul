@@ -12,12 +12,8 @@ const Stage: React.FC<{ children: React.ReactNode; top?: number }> = ({ children
   <AbsoluteFill style={{ top, height: 960, display: "flex", alignItems: "center", justifyContent: "center" }}>{children}</AbsoluteFill>
 );
 
-const useExit = () => {
-  const frame = useCurrentFrame();
-  const { dur } = useScene();
-  const o = ease(frame, dur - 9, dur);
-  return { opacity: 1 - o, transform: `scale(${1 - o * 0.06})`, filter: `blur(${o * 12}px)` } as React.CSSProperties;
-};
+/** Exits are handled by SceneMotion for this reel. */
+const useExit = (): React.CSSProperties => ({});
 
 const Cross: React.FC<{ size: number }> = ({ size }) => (
   <div style={{ width: size, height: size, borderRadius: size, background: C.crimson, display: "grid", placeItems: "center", boxShadow: "0 8px 20px rgba(212,35,77,0.35)" }}>
@@ -102,14 +98,14 @@ export const DoneCard: React.FC = () => {
 export const KalCard: React.FC = () => {
   const frame = useCurrentFrame();
   const enter = useSpring(0, 13, 160);
-  const t3 = useWordFrame("teen", 50);
-  const t12 = useWordFrame("baarah", 75);
-  const t27 = useWordFrame("sattaees", 100);
-  const day = frame < t3 ? 1 : frame < t12 ? 3 : frame < t27 ? 12 : 27;
-  const flipAt = frame < t3 ? -100 : frame < t12 ? t3 : frame < t27 ? t12 : t27;
-  const flip = ease(frame, flipAt, flipAt + 7);
-  const heat = day >= 27 ? 1 : day >= 12 ? 0.6 : day >= 3 ? 0.25 : 0;
-  const cal = useSpring(t3 - 8, 12, 170);
+  const { dur } = useScene();
+  // count up 1 -> 27 across the scene, with a flip on every change
+  const v = interpolate(frame, [12, Math.max(14, dur - 10)], [1, 27.99], clamp);
+  const day = Math.floor(v);
+  const flip = Math.min(1, (v - day) * 4);
+  const heat = day >= 20 ? 1 : day >= 10 ? 0.6 : day >= 3 ? 0.25 : 0;
+  const t3 = 12;
+  const cal = useSpring(t3 - 10, 12, 170);
   return (
     <Stage>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 46, ...useExit() }}>
@@ -127,7 +123,7 @@ export const KalCard: React.FC = () => {
               boxShadow: "0 18px 40px rgba(0,0,0,0.08)",
             }}
           >
-            {typed("Haan bhai, kal kar deta hoon", frame, 4, 1.4)}
+            {typed("Haan bhai, kal kar deta hoon", frame, 0, 2.2)}
             <div style={{ fontSize: 20, color: C.gray, fontWeight: 600, marginTop: 8, textAlign: "right" }}>Seen ✓✓</div>
           </div>
         </div>

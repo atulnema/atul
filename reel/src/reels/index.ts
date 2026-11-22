@@ -11,5 +11,5 @@ import { paymentSfx } from "./payment/sfx";
 
 export const REELS: Record<string, ReelDef> = {
   agent: { data: makeReel("agent", agentScript as Script, agentTiming as Timing), cards: agentCards, sfx: agentSfx },
-  payment: { data: makeReel("payment", paymentScript as Script, paymentTiming as Timing), cards: paymentCards, sfx: paymentSfx },
+  payment: { data: makeReel("payment", paymentScript as Script, paymentTiming as Timing), cards: paymentCards, sfx: paymentSfx, motion: true, background: "ledger", music: "music/payment.mp3" },
 };
