@@ -1,8 +1,8 @@
 import React from "react";
 import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
-import { C, F } from "./theme";
-import { useScene, useWordFrame } from "./timing";
-import { Card, Caret, Check, Label, Lock, MiniFace, Spark, clamp, ease, popStyle, typed, useSpring } from "./components/ui";
+import { C, F } from "../../theme";
+import { useScene, useWordFrame } from "../../timing";
+import { Card, Caret, Check, Label, Lock, MiniFace, Spark, clamp, ease, popStyle, typed, useSpring } from "../../components/ui";
 
 /** Centre stage area under the headline. */
 const Stage: React.FC<{ children: React.ReactNode; top?: number }> = ({ children, top = 430 }) => (

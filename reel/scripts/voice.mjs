@@ -1,6 +1,6 @@
 // Generates the voiceover with ElevenLabs and writes word-level timing.
 //
-//   node scripts/voice.mjs --voice <voice_id> [--model eleven_multilingual_v2]
+//   node scripts/voice.mjs --reel <id> --voice <voice_id> [--model eleven_multilingual_v2]
 //   node scripts/voice.mjs --estimate     (no API call: fake timing for layout work)
 //   node scripts/voice.mjs --audio my_take.mp3   (align your own MP3 recording to the script, 1:1 words)
 //
@@ -10,13 +10,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const script = JSON.parse(fs.readFileSync(path.join(root, "src/script.json"), "utf8"));
-
 const args = process.argv.slice(2);
 const arg = (name, fallback) => {
   const i = args.indexOf(`--${name}`);
   return i >= 0 ? args[i + 1] : fallback;
 };
+const reel = arg("reel", "agent");
+const script = JSON.parse(fs.readFileSync(path.join(root, `src/reels/${reel}/script.json`), "utf8"));
 const estimate = args.includes("--estimate");
 const voiceId = arg("voice");
 const model = arg("model", "eleven_multilingual_v2");
@@ -37,8 +37,8 @@ script.scenes.forEach((scene, sceneIndex) => {
   }
 });
 
-const outTiming = path.join(root, "src/timing.json");
-const outAudio = path.join(root, "public/voice.mp3");
+const outTiming = path.join(root, `src/reels/${reel}/timing.json`);
+const outAudio = path.join(root, `public/${reel}/voice.mp3`);
 
 function writeTiming(words, duration, hasAudio) {
   const scenes = script.scenes.map((s, i) => {

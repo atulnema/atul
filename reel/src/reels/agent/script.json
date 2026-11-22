@@ -76,7 +76,11 @@
       "id": "think",
       "title": "Kabhi Nahi Sochna",
       "sub": "Aaj Kya Post Karun?",
-      "words": "Ab|अब kabhi|कभी nahi|नहीं sochna|सोचना padta|पड़ता ki|कि *aaj|आज *kya|क्या *post|पोस्ट *karun?|करूँ?"
+      "words": "Ab|अब kabhi|कभी nahi|नहीं sochna|सोचना padta|पड़ता ki|कि *aaj|आज *kya|क्या *post|पोस्ट *karun?|करूँ?",
+      "center": {
+        "tag": "Content planned",
+        "tagAt": "post"
+      }
     },
     {
       "id": "save",

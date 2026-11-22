@@ -2,7 +2,7 @@ import React from "react";
 import { AbsoluteFill, interpolate, useCurrentFrame, staticFile } from "remotion";
 import { useAudioData, visualizeAudio } from "@remotion/media-utils";
 import { C, F, FPS, W, H } from "../theme";
-import { timing, f, sceneFrames, sceneById, wordFrameGlobal, Word } from "../timing";
+import { f, useReel, Word } from "../timing";
 import { clamp, ease, useSpring, Check } from "./ui";
 import { Avatar } from "./Avatar";
 
@@ -76,27 +76,9 @@ export const Headline: React.FC<{ title: string; sub: string; chip?: string; dur
 /* ------------------------------------------------------------------ */
 /* Captions: 1-3 words at a time, popping in as they are spoken        */
 /* ------------------------------------------------------------------ */
-type Group = { words: Word[]; start: number; end: number };
-const groups: Group[] = (() => {
-  const out: Group[] = [];
-  let cur: Word[] = [];
-  const flush = () => {
-    if (cur.length) out.push({ words: cur, start: f(cur[0].start), end: f(cur[cur.length - 1].end) });
-    cur = [];
-  };
-  timing.words.forEach((w, i) => {
-    const prev = timing.words[i - 1];
-    if (prev && prev.scene !== w.scene) flush();
-    cur.push(w);
-    const chars = cur.reduce((n, x) => n + x.cap.length, 0);
-    if (/[.,:?]$/.test(w.cap) || cur.length >= 3 || chars > 14) flush();
-  });
-  flush();
-  return out;
-})();
-
 export const Captions: React.FC = () => {
   const frame = useCurrentFrame();
+  const { groups } = useReel();
   const gi = groups.findIndex((g, i) => frame >= g.start - 2 && frame < (groups[i + 1]?.start ?? Infinity) - 2);
   const g = groups[gi];
   if (!g) return null;
@@ -143,16 +125,17 @@ export const Captions: React.FC = () => {
 /* ------------------------------------------------------------------ */
 /* Voice level: real audio amplitude when available, else word timing  */
 /* ------------------------------------------------------------------ */
-const useLevelFromWords = (frame: number) => {
+const useLevelFromWords = (frame: number, words: Word[]) => {
   const t = frame / FPS;
-  const w = timing.words.find((x) => t >= x.start && t <= x.end + 0.02);
+  const w = words.find((x) => t >= x.start && t <= x.end + 0.02);
   if (!w) return 0;
   return 0.45 + 0.45 * Math.abs(Math.sin(frame * 1.7)) * Math.abs(Math.sin(frame * 0.63 + 1));
 };
 
 const LevelFromAudio: React.FC<{ children: (lvl: number, bars: number[]) => React.ReactNode }> = ({ children }) => {
   const frame = useCurrentFrame();
-  const audio = useAudioData(staticFile("voice.mp3"));
+  const reel = useReel();
+  const audio = useAudioData(staticFile(reel.audio));
   if (!audio) return <>{children(0, new Array(9).fill(0))}</>;
   const bins = visualizeAudio({ fps: FPS, frame, audioData: audio, numberOfSamples: 32, optimizeFor: "speed" });
   const speech = bins.slice(1, 12);
@@ -163,8 +146,9 @@ const LevelFromAudio: React.FC<{ children: (lvl: number, bars: number[]) => Reac
 
 export const VoiceLevel: React.FC<{ children: (lvl: number, bars: number[]) => React.ReactNode }> = ({ children }) => {
   const frame = useCurrentFrame();
+  const { timing } = useReel();
   if (timing.hasAudio) return <LevelFromAudio>{children}</LevelFromAudio>;
-  const lvl = useLevelFromWords(frame);
+  const lvl = useLevelFromWords(frame, timing.words);
   const bars = Array.from({ length: 9 }, (_, i) => lvl * (0.4 + 0.6 * Math.abs(Math.sin(frame * 0.5 + i * 1.3))));
   return <>{children(lvl, bars)}</>;
 };
@@ -185,7 +169,8 @@ const blinkAt = (frame: number) => {
 
 export const AvatarRig: React.FC = () => {
   const frame = useCurrentFrame();
-  const think = sceneById("think");
+  const reel = useReel();
+  const think = reel.sceneFrames.find((s) => s.center) ?? { id: "", from: -100000, dur: 0, center: undefined as { tag?: string; tagAt?: string } | undefined };
   const tIn = ease(frame, think.from - 4, think.from + 14);
   const tOut = ease(frame, think.from + think.dur - 2, think.from + think.dur + 9);
   const big = tIn * (1 - tOut);
@@ -196,7 +181,8 @@ export const AvatarRig: React.FC = () => {
   const top = interpolate(big, [0, 1], [H - 440, 470]);
   const bob = Math.sin(frame / 22) * 4;
 
-  const plannedAt = wordFrameGlobal("think", "post", think.from + 40);
+  const tag = think.center?.tag;
+  const plannedAt = tag ? reel.wordFrameGlobal(think.id, think.center?.tagAt ?? "", think.from + 40) : 1e7;
   const plannedRaw = ease(frame, plannedAt, plannedAt + 8);
   const planned = plannedRaw * (1 - Math.min(1, tOut * 2.5));
   const thinking = big > 0.5 && frame < plannedAt;
@@ -322,7 +308,7 @@ export const AvatarRig: React.FC = () => {
               }}
             >
               <Check size={48} />
-              Content planned
+              {tag}
             </div>
           )}
         </>
@@ -331,7 +317,6 @@ export const AvatarRig: React.FC = () => {
   );
 };
 
-export { sceneFrames };
 
 /* ------------------------------------------------------------------ */
 /* Handle badge (bottom-left)                                          */

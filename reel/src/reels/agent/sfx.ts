@@ -1,10 +1,9 @@
-import fs from "./sfx.json";
-import { sceneById, wordFrameGlobal } from "./timing";
+import type { ReelData } from "../../timing";
+import type { Cue } from "../types";
 
-/** Sound effect cues, placed relative to the voice timing. Only files listed in sfx.json are used. */
-const available = new Set<string>((fs as { files: string[] }).files);
-
-const raw: { name: string; at: number; vol: number }[] = [];
+/** Sound effect cues for the agent reel, placed relative to the voice timing. */
+export const agentSfx = ({ sceneById, wordFrameGlobal }: ReelData): Cue[] => {
+const raw: Cue[] = [];
 const add = (name: string, at: number, vol = 0.5) => raw.push({ name, at, vol });
 
 for (const id of ["hired", "locked", "speed", "viral", "comment", "approve", "plan", "save", "cta", "dm"]) {
@@ -28,4 +27,5 @@ add("pop", wordFrameGlobal("save", "save", 0), 0.55);
 add("typing", wordFrameGlobal("cta", "agent", 0) - 4, 0.3);
 add("ding", wordFrameGlobal("dm", "dm", 0), 0.45);
 
-export const sfxCues = raw.filter((c) => available.has(c.name));
+return raw;
+};

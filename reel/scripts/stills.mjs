@@ -7,7 +7,7 @@ import { bundle } from "@remotion/bundler";
 import { renderStill, selectComposition } from "@remotion/renderer";
 
 const root = path.resolve(import.meta.dirname, "..");
-const timing = JSON.parse(fs.readFileSync(path.join(root, "src/timing.json"), "utf8"));
+const timing = JSON.parse(fs.readFileSync(path.join(root, `src/reels/${(process.env.COMP ?? "Payment").toLowerCase()}/timing.json`), "utf8"));
 const args = process.argv.slice(2);
 const scale = Number(args[0] ?? 0.3);
 let frames = args.slice(1).map(Number).filter((n) => !Number.isNaN(n));
@@ -20,7 +20,7 @@ if (!frames.length) {
   });
 }
 const serveUrl = await bundle({ entryPoint: path.join(root, "src/index.ts") });
-const composition = await selectComposition({ serveUrl, id: "Reel", browserExecutable: process.env.REMOTION_CHROME });
+const composition = await selectComposition({ serveUrl, id: process.env.COMP ?? "Payment", browserExecutable: process.env.REMOTION_CHROME });
 const dir = path.join(root, "out/stills");
 fs.rmSync(dir, { recursive: true, force: true });
 fs.mkdirSync(dir, { recursive: true });
