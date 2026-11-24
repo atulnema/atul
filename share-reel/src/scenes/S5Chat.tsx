@@ -6,10 +6,11 @@ import { C, EMOJI, H, INTER, W, clamp, easeInOut, easeOut } from "../theme";
 // the plate), cafe B-roll bottom 55%, spring-physics chat bubble on the seam.
 export const SPLIT_Y = 864;
 const SLIDE = [3, 23];
-const BUBBLE = 30;
+const BUBBLE = 62; // lands just before VO line 07 (23.0s)
 const EXPAND = BUBBLE + 15; // 0.5s of typing dots
 const MSG = ["Abe", "tu", "kitna", "dumb", "hai,", "tereko", "ye", "nahi", "pata"];
-const TICKS = 140;
+const TICKS = 180;
+const WORD0 = EXPAND + 22; // "Abe" in VO 07, after "jaise..."
 
 const Cafe: React.FC<{ f: number }> = ({ f }) => {
   const orbs = new Array(12).fill(0).map((_, i) => {
@@ -18,8 +19,8 @@ const Cafe: React.FC<{ f: number }> = ({ f }) => {
     const r = 40 + random(`cr${i}`) * 110;
     return <circle key={i} cx={x + Math.sin(f / 40 + i) * 8} cy={y} r={r} fill={i % 3 ? "#ffb35c" : "#ffe1b0"} opacity={0.12 + random(`cp${i}`) * 0.25} />;
   });
-  const sent = f >= 120;
-  const sheet = interpolate(f, [60, 72], [1, 0], { ...clamp, easing: easeOut });
+  const sent = f >= 150;
+  const sheet = interpolate(f, [40, 52], [1, 0], { ...clamp, easing: easeOut });
   return (
     <AbsoluteFill style={{ top: SPLIT_Y, height: H - SPLIT_Y, overflow: "hidden", background: "linear-gradient(180deg, #2b1a10 0%, #160d08 70%, #0b0705 100%)" }}>
       <svg width={W} height={H - SPLIT_Y} style={{ position: "absolute" }}>
@@ -88,7 +89,7 @@ const Cafe: React.FC<{ f: number }> = ({ f }) => {
               justifyContent: "center",
               fontSize: 26,
               fontWeight: 700,
-              scale: String(interpolate(f, [116, 120, 126], [1, 0.92, 1], clamp)),
+              scale: String(interpolate(f, [146, 150, 156], [1, 0.92, 1], clamp)),
             }}
           >
             {sent ? "Sent ✓" : "Send"}
@@ -147,7 +148,7 @@ export const S5Chat: React.FC = () => {
             <>
               <div style={{ fontFamily: `${INTER}, ${EMOJI}`, fontWeight: 600, fontSize: 52, lineHeight: 1.22, color: "#fff", opacity: (expand - 0.5) * 2 }}>
                 {MSG.map((w, i) => {
-                  const t = EXPAND + 10 + i * 8;
+                  const t = WORD0 + i * 8;
                   const lit = f >= t;
                   return (
                     <span key={i} style={{ color: lit ? "#fff" : "rgba(255,255,255,0.35)", textShadow: lit && f < t + 10 ? `0 0 22px ${C.yellow}` : "none" }}>
@@ -155,7 +156,7 @@ export const S5Chat: React.FC = () => {
                     </span>
                   );
                 })}
-                <span style={{ fontFamily: EMOJI, opacity: f >= EXPAND + 10 + MSG.length * 8 ? 1 : 0.2 }}>😂</span>
+                <span style={{ fontFamily: EMOJI, opacity: f >= WORD0 + MSG.length * 8 ? 1 : 0.2 }}>😂</span>
               </div>
               <div style={{ position: "absolute", right: 36, bottom: 22, fontFamily: INTER, fontSize: 24, color: "rgba(255,255,255,0.55)", display: "flex", gap: 10, alignItems: "center" }}>
                 9:41 PM

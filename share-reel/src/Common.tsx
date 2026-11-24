@@ -79,7 +79,13 @@ export const usePop = (start: number, overshoot = 1.18, dur = 10) => {
   return { s, o, visible: f >= start };
 };
 
-export type Line = { from: number; to: number; text: string };
+export type Line = {
+  from: number;
+  to: number;
+  text: string;
+  /** Absolute frame each displayed word lights up; falls back to an even spread. */
+  wordAt?: number[];
+};
 
 /** Karaoke-style VO subtitle - words light up across the line's duration. */
 export const Subtitles: React.FC<{ lines: Line[] }> = ({ lines }) => {
@@ -106,7 +112,7 @@ export const Subtitles: React.FC<{ lines: Line[] }> = ({ lines }) => {
         }}
       >
         {words.map((w, i) => {
-          const t = line.from + (i / words.length) * span;
+          const t = line.wordAt?.[i] ?? line.from + (i / words.length) * span;
           return (
             <span key={i} style={{ opacity: f >= t ? 1 : 0.38 }}>
               {w}{" "}

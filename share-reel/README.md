@@ -35,6 +35,22 @@ npx remotion render ShareReel out/share-reel-preview.mp4 \
 
 Fonts (Montserrat, Inter) are self-hosted in `public/fonts`, so renders never depend on the network. The 😂 in the chat bubble uses the system colour-emoji font.
 
+## Voiceover (ElevenLabs)
+
+The VO is generated with ElevenLabs' free premade voice **Brian** on the `eleven_multilingual_v2` model. Hindi is written in Devanagari and English stays in Latin script, so each language is pronounced natively instead of romanised Hindi read with an English accent. The romanised Hinglish you see in the subtitles is kept separately in `generate-voiceover.ts`.
+
+```bash
+ELEVENLABS_API_KEY=your_key node --experimental-strip-types generate-voiceover.ts
+# behind an HTTPS proxy, also set NODE_USE_ENV_PROXY=1
+```
+
+- Writes `public/voiceover/<line>.mp3` and `src/voiceover.json`. Each line's start time is set in `VO_START` in `src/Main.tsx`.
+- **Safe to re-run.** Lines that already have an MP3 are skipped, so credits only go to missing lines. Delete an MP3 to regenerate it.
+- New lines also save word timestamps, and the subtitle highlighting follows them.
+- To change the voice, set `VOICE_ID=...`. Free-plan API keys can only use premade voices. An Indian-accented library voice or a clone of your own voice needs a paid plan.
+
+**Current status:** lines 01–08 are generated. Lines 09–11 ("Mere customer ko…", "Bas yeh ek psychology…", "…very, very, very quickly") are still missing because the free monthly quota ran out. Their subtitles still show. Re-run the script once credits reset or are topped up (about 190 credits), then re-render.
+
 ## Dropping in real footage
 
 1. Cut the presenter takes into one 45-second, 1080×1920, 30fps file that follows the timeline below.
@@ -84,7 +100,7 @@ Generate one reference still of the presenter first, then run every clip below a
 | H | 5s | Medium shot. He opens both palms toward the lens with intense conviction. | "'Mere customer ko main kaise smart feel karau, taaki woh dusre logon ko mera content share kare?'" |
 | I | 7s | Medium shot. A confident nod, then he points straight into the lens with a knowing smile and holds it. | "Bas yeh ek psychology crack kar lo, and you will go 0 to 100k very, very, very quickly." |
 
-**Lip-sync tip:** record the Hinglish VO as one real take first, then lip-sync each clip to its slice. Generated Hinglish speech and accent are still the weakest link in most models, and one continuous human read keeps the energy consistent across cuts.
+**Lip-sync tip:** lip-sync each clip to its slice of the generated VO in `public/voiceover/` (or a real recorded take). Generated Hinglish speech and accent are still the weakest link in most models, and one continuous human read keeps the energy consistent across cuts.
 
 ## SFX and music cue sheet
 

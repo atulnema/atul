@@ -1,8 +1,10 @@
 import React from "react";
-import { AbsoluteFill, Sequence, interpolate, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Sequence, interpolate, staticFile, useCurrentFrame } from "remotion";
+import { Audio } from "@remotion/media";
+import voiceover from "./voiceover.json";
 import { Plate } from "./Plate";
 import { Grain, Line, Subtitles } from "./Common";
-import { C, Seg, clamp, easeIn, easeInOut, easeOut, pulses, track } from "./theme";
+import { C, FPS, Seg, clamp, easeIn, easeInOut, easeOut, pulses, track } from "./theme";
 import { S1Likes } from "./scenes/S1Likes";
 import { S2Plane } from "./scenes/S2Plane";
 import { S3Orbit } from "./scenes/S3Orbit";
@@ -67,17 +69,50 @@ const CA_HITS = [15, 102, 116, 203, 345, 450, 480, 495, 555, 570, 810, 1140, 121
 const FLASH_SMALL = [480, 495, 555, 570, 1292];
 const FLASH_CUTS = CUTS.map((c) => c + 1140);
 
-const VO: Line[] = [
-  { from: 0, to: 96, text: "Koi bhi content likes aur comments ke liye mat banao..." },
-  { from: 96, to: 208, text: "...kyunki ye sirf ego boost karte hain, growth nahi." },
-  { from: 212, to: 350, text: "Content sirf isliye banao ki ye dusre ko bheja jaye. Kyu?" },
-  { from: 362, to: 448, text: "Kyunki algorithm ka sabse bada signal sirf 'Shares' hai." },
-  { from: 452, to: 540, text: "Aur iska sabse bada hack pata hai kya hai?" },
-  { from: 540, to: 628, text: "Apni audience ko aisa mauka do ki woh video bhej kar saamne wale ko playfully insult kar sake..." },
-  { from: 812, to: 988, text: "Toh asli sawaal jo aapko khud se poochna chahiye, woh ye hai..." },
-  { from: 990, to: 1136, text: "\"Mere customer ko main kaise smart feel karau, taaki woh dusre logon ko mera content share kare?\"" },
-  { from: 1144, to: 1288, text: "Bas yeh ek psychology crack kar lo..." },
-];
+// ---------------------------------------------------------------- voiceover
+// Where each ElevenLabs line starts (seconds). Durations come from
+// src/voiceover.json, written by generate-voiceover.ts.
+const VO_START: Record<string, number> = {
+  "01-hook": 0.1,
+  "02-ego": 3.75,
+  "03-share": 7.25,
+  "04-signal": 12.0,
+  "05-hack": 15.5,
+  "06-insult": 17.6,
+  "07-example": 23.0, // shown inside the chat bubble, not as a subtitle
+  "08-question": 27.3,
+  "09-smart": 33.0,
+  "10-crack": 38.3,
+  "11-payoff": 40.8,
+};
+const NO_SUBTITLE = new Set(["07-example", "11-payoff"]);
+// Subtitle stand-ins for lines that have no audio yet (e.g. quota ran out).
+const FALLBACK: Record<string, Line> = {
+  "09-smart": { from: 990, to: 1136, text: "\"Mere customer ko main kaise smart feel karau, taaki woh dusre logon ko mera content share kare?\"" },
+  "10-crack": { from: 1144, to: 1288, text: "Bas yeh ek psychology crack kar lo..." },
+};
+
+type VoLine = { id: string; sub: string; duration: number; words: { w: string; start: number }[] | null };
+const VO_AUDIO = (voiceover.lines as VoLine[]).map((l) => ({
+  ...l,
+  from: Math.round(VO_START[l.id] * FPS),
+  frames: Math.ceil(l.duration * FPS) + 2,
+}));
+
+const VO: Line[] = Object.keys(VO_START)
+  .filter((id) => !NO_SUBTITLE.has(id))
+  .map((id) => {
+    const a = VO_AUDIO.find((l) => l.id === id);
+    if (!a) return FALLBACK[id];
+    const subWords = a.sub.split(" ");
+    // Spoken words are Devanagari/English, subtitles are romanised: map by
+    // relative position so highlighting tracks the real speech rhythm.
+    const wordAt = a.words
+      ? subWords.map((_, i) => a.from + Math.round(a.words![Math.floor((i / subWords.length) * a.words!.length)].start * FPS))
+      : undefined;
+    return { from: a.from, to: a.from + a.frames + 8, text: a.sub, wordAt };
+  })
+  .filter(Boolean) as Line[];
 
 const RGBSplitFilter: React.FC<{ amount: number }> = ({ amount }) => (
   <svg width={0} height={0} style={{ position: "absolute" }}>
@@ -182,6 +217,11 @@ export const Main: React.FC<MainProps> = ({ presenterSrc, showSubtitles }) => {
         </AbsoluteFill>
       </AbsoluteFill>
 
+      {VO_AUDIO.map((l) => (
+        <Sequence key={l.id} name={`VO ${l.id}`} from={l.from} durationInFrames={l.frames} layout="none">
+          <Audio src={staticFile(`voiceover/${l.id}.mp3`)} />
+        </Sequence>
+      ))}
       {showSubtitles && <Subtitles lines={VO} />}
       <AbsoluteFill style={{ background: "#fff", opacity: Math.min(1, flash), pointerEvents: "none" }} />
       <Grain />
