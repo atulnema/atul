@@ -1,0 +1,54 @@
+{
+  "voiceId": "nPczCjzI2devNBz1zQrb",
+  "model": "eleven_multilingual_v2",
+  "lines": [
+    {
+      "id": "01-hook",
+      "duration": 3.578776,
+      "words": null,
+      "sub": "Koi bhi content likes aur comments ke liye mat banao..."
+    },
+    {
+      "id": "02-ego",
+      "duration": 3.369796,
+      "words": null,
+      "sub": "...kyunki ye sirf ego boost karte hain, growth nahi."
+    },
+    {
+      "id": "03-share",
+      "duration": 3.422041,
+      "words": null,
+      "sub": "Content sirf isliye banao ki ye dusre ko bheja jaye. Kyu?"
+    },
+    {
+      "id": "04-signal",
+      "duration": 3.474286,
+      "words": null,
+      "sub": "Kyunki algorithm ka sabse bada signal sirf 'Shares' hai."
+    },
+    {
+      "id": "05-hack",
+      "duration": 1.985306,
+      "words": null,
+      "sub": "Aur iska sabse bada hack pata hai kya hai?"
+    },
+    {
+      "id": "06-insult",
+      "duration": 5.276735,
+      "words": null,
+      "sub": "Apni audience ko aisa mauka do ki woh video bhej kar saamne wale ko playfully insult kar sake..."
+    },
+    {
+      "id": "07-example",
+      "duration": 3.343673,
+      "words": null,
+      "sub": "...jaise: 'Abe tu kitna dumb hai, tereko ye nahi pata!'"
+    },
+    {
+      "id": "08-question",
+      "duration": 3.996735,
+      "words": null,
+      "sub": "Toh asli sawaal jo aapko khud se poochna chahiye, woh ye hai..."
+    }
+  ]
+}
