@@ -1,0 +1,5 @@
+node_modules
+out
+audio-src/takes
+audio-src/tests
+audio-src/*.log
