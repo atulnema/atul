@@ -1,6 +1,8 @@
 """Pick best VO takes, assemble the voiceover, build timeline.json, synthesize music + SFX, mix.
 
-Usage: python assemble.py <project_dir> [--fake]
+Usage: python assemble.py <project_dir> [--edge] [--fake]
+
+--edge uses the per-scene Microsoft neural voice clips from gen_edge.py (current default voice).
 """
 import json, math, os, re, sys
 import numpy as np
@@ -9,6 +11,7 @@ from scipy.signal import lfilter, butter, sosfilt
 
 PROJ = sys.argv[1]
 FAKE = "--fake" in sys.argv
+EDGE = "--edge" in sys.argv
 BASE = os.path.join(PROJ, "audio-src")
 SR = 44100
 FPS = 30
@@ -53,10 +56,50 @@ def cer(a, b):
     return d[len(b)] / max(1, len(b))
 
 
-# ---------------- 1. choose takes ----------------
+# ---------------- 1. voice ----------------
 clips = {}
 report = []
-if not FAKE:
+if EDGE:
+    # One clip per scene; segment times come from the voice's word boundaries.
+    import librosa
+    order0 = []
+    for s in segs:
+        if s["scene"] not in order0:
+            order0.append(s["scene"])
+    last_gap = {s["scene"]: s["gap"] for s in segs}
+    scene_audio, scene_segs = {}, {}
+    for sc in order0:
+        y, sr = librosa.load(os.path.join(BASE, "edge", sc + ".mp3"), sr=SR, mono=True)
+        meta = json.load(open(os.path.join(BASE, "edge", sc + ".json")))
+        st = min(v[0] for v in meta["segs"].values())
+        en = max(v[1] for v in meta["segs"].values())
+        a = max(0, int((st - 0.03) * SR))
+        b = min(len(y), int((en + 0.07) * SR))
+        yt = y[a:b].astype(np.float32)
+        rms_ = np.sqrt(np.mean(yt ** 2)) + 1e-9
+        yt *= 0.1 / rms_
+        fl = int(0.01 * SR)
+        yt[:fl] *= np.linspace(0, 1, fl)
+        yt[-fl * 4:] *= np.linspace(1, 0, fl * 4)
+        scene_audio[sc] = yt
+        scene_segs[sc] = {k: (v[0] - a / SR, v[1] - a / SR) for k, v in meta["segs"].items()}
+    t = LEAD
+    seg_t = {}
+    placements = []
+    for sc in order0:
+        placements.append((t, scene_audio[sc]))
+        for k, (x0, x1) in scene_segs[sc].items():
+            seg_t[k] = (t + x0, t + x1)
+        t += len(scene_audio[sc]) / SR + last_gap[sc]
+    total_s = t
+    DUR = int(math.ceil(total_s * FPS))
+    N = int(DUR / FPS * SR) + SR
+    vo = np.zeros(N, np.float32)
+    for t0, c in placements:
+        a = int(t0 * SR)
+        vo[a:a + len(c)] += c
+    print("edge VO length %.2fs" % total_s)
+elif not FAKE:
     import librosa
     from faster_whisper import WhisperModel
     asr = WhisperModel("small", device="cpu", compute_type="int8")
@@ -96,31 +139,32 @@ else:
     for s in segs:
         clips[s["id"]] = np.zeros(int(len(norm_txt(s["tts"])) * 0.07 * SR), np.float32)
 
-# global tempo: keep VO inside ~44 s
-vo_len = sum(len(c) for c in clips.values()) / SR + sum(s["gap"] for s in segs) + LEAD
-TEMPO = 1.0
-if vo_len > 45.0 and not FAKE:
-    TEMPO = min(1.15, vo_len / 44.5)
-    import librosa
-    for k in clips:
-        clips[k] = librosa.effects.time_stretch(clips[k], rate=TEMPO).astype(np.float32)
-print("raw VO length %.2fs, tempo %.3f" % (vo_len, TEMPO))
+if not EDGE:
+    # global tempo: keep VO inside ~44 s
+    vo_len = sum(len(c) for c in clips.values()) / SR + sum(s["gap"] for s in segs) + LEAD
+    TEMPO = 1.0
+    if vo_len > 45.0 and not FAKE:
+        TEMPO = min(1.15, vo_len / 44.5)
+        import librosa
+        for k in clips:
+            clips[k] = librosa.effects.time_stretch(clips[k], rate=TEMPO).astype(np.float32)
+    print("raw VO length %.2fs, tempo %.3f" % (vo_len, TEMPO))
 
-# ---------------- 2. place VO + timeline ----------------
-t = LEAD
-seg_t = {}
-for s in segs:
-    c = clips[s["id"]]
-    seg_t[s["id"]] = (t, t + len(c) / SR)
-    t += len(c) / SR + s["gap"]
-total_s = t
-DUR = int(math.ceil(total_s * FPS))
-N = int(DUR / FPS * SR) + SR
-vo = np.zeros(N, np.float32)
-for s in segs:
-    a = int(seg_t[s["id"]][0] * SR)
-    c = clips[s["id"]]
-    vo[a:a + len(c)] += c
+    # ---------------- 2. place VO + timeline ----------------
+    t = LEAD
+    seg_t = {}
+    for s in segs:
+        c = clips[s["id"]]
+        seg_t[s["id"]] = (t, t + len(c) / SR)
+        t += len(c) / SR + s["gap"]
+    total_s = t
+    DUR = int(math.ceil(total_s * FPS))
+    N = int(DUR / FPS * SR) + SR
+    vo = np.zeros(N, np.float32)
+    for s in segs:
+        a = int(seg_t[s["id"]][0] * SR)
+        c = clips[s["id"]]
+        vo[a:a + len(c)] += c
 
 TL_segs = {}
 for s in segs:
