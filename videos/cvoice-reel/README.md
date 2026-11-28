@@ -12,6 +12,17 @@ Vertical 1080x1920 promo reel built with Remotion. The voiceover is generated lo
 | 4. Timeline | Step 3 also writes the frame-accurate timeline (scenes, segments, word timings, caption groups) that the video reads | `src/timeline.json` |
 | 5. Video | 14 scenes, one visual metaphor per beat, custom whip / zoom / iris / blur / flash transitions | `src/Main.tsx`, `src/scenes/*` |
 
+## Current voice
+
+The final cut uses a supplied ElevenLabs voiceover (`audio-src/user/voiceover.wav`), used untouched. `align_user.py` maps each script line to its time in that file from Whisper word timestamps, and `assemble.py --user` builds the timeline and mix around it:
+
+```bash
+python audio-src/align_user.py "$PWD/audio-src"
+python audio-src/assemble.py "$PWD" --user
+```
+
+To drop in a new take, replace `voiceover.wav`, re-run Whisper into `user/asr_words.json`, update the anchor words in `align_user.py` if they changed, then run the two commands above and re-render.
+
 ## Re-running
 
 ```bash

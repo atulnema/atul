@@ -1,6 +1,8 @@
 """Pick best VO takes, assemble the voiceover, build timeline.json, synthesize music + SFX, mix.
 
-Usage: python assemble.py <project_dir> [--edge] [--fake]
+Usage: python assemble.py <project_dir> [--user | --edge] [--fake]
+
+--user uses a supplied voiceover (audio-src/user/voiceover.wav), aligned by align_user.py.
 
 --edge uses the per-scene Microsoft neural voice clips from gen_edge.py (current default voice).
 """
@@ -12,6 +14,7 @@ from scipy.signal import lfilter, butter, sosfilt
 PROJ = sys.argv[1]
 FAKE = "--fake" in sys.argv
 EDGE = "--edge" in sys.argv
+USER = "--user" in sys.argv  # supplied voiceover in audio-src/user/ (aligned by align_user.py)
 BASE = os.path.join(PROJ, "audio-src")
 SR = 44100
 FPS = 30
@@ -59,7 +62,21 @@ def cer(a, b):
 # ---------------- 1. voice ----------------
 clips = {}
 report = []
-if EDGE:
+if USER:
+    # A supplied voiceover, used untouched; segment times come from align_user.py.
+    import librosa
+    y, _ = librosa.load(os.path.join(BASE, "user", "voiceover.wav"), sr=SR, mono=True)
+    y = y.astype(np.float32)
+    y *= 0.1 / (np.sqrt(np.mean(y[np.abs(y) > 1e-3] ** 2)) + 1e-9)
+    times = json.load(open(os.path.join(BASE, "user", "segments_times.json")))
+    seg_t = {k: (v[0], v[1]) for k, v in times.items()}
+    total_s = len(y) / SR + 0.7  # short visual hold after the last word
+    DUR = int(math.ceil(total_s * FPS))
+    N = int(DUR / FPS * SR) + SR
+    vo = np.zeros(N, np.float32)
+    vo[: len(y)] = y
+    print("user VO length %.2fs" % (len(y) / SR))
+elif EDGE:
     # One clip per scene; segment times come from the voice's word boundaries.
     import librosa
     order0 = []
@@ -139,7 +156,7 @@ else:
     for s in segs:
         clips[s["id"]] = np.zeros(int(len(norm_txt(s["tts"])) * 0.07 * SR), np.float32)
 
-if not EDGE:
+if not EDGE and not USER:
     # global tempo: keep VO inside ~44 s
     vo_len = sum(len(c) for c in clips.values()) / SR + sum(s["gap"] for s in segs) + LEAD
     TEMPO = 1.0
