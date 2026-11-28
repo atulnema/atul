@@ -1,0 +1,22 @@
+{
+  "name": "alphastrix-reel",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render AlphastrixReel out/alphastrix-reel.mp4",
+    "still": "remotion still AlphastrixReel out/still.png"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.547",
+    "remotion": "4.0.547",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "@fontsource/inter": "5.2.8",
+    "@fontsource/jetbrains-mono": "5.2.8",
+    "@types/react": "19.2.2",
+    "typescript": "5.9.3"
+  }
+}
