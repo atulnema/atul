@@ -1,6 +1,6 @@
 import React from "react";
 import { Easing, interpolateColors, useCurrentFrame, useVideoConfig } from "remotion";
-import { BRAND, NUMBERS } from "./content";
+import { AUTOPILOT_AT, BRAND, FPS, NUMBERS, SCENES } from "./content";
 import { C, F } from "./theme";
 import {
   Bar,
@@ -34,7 +34,7 @@ const Check: React.FC<{ size?: number; color?: string }> = ({ size = 26, color =
 export const Hook: React.FC<SceneProps> = ({ dur }) => {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const count = Math.min(4, Math.max(0, Math.floor(lerp(f, 22, 104, 0, 4.999, Easing.linear))));
+  const count = Math.min(4, Math.max(0, Math.floor(lerp(f, 14, 80, 0, 4.999, Easing.linear))));
   const items = ["/seo-content", "/performance-ads", "/web-design", "/brand-social"];
   const icons = pop(f, fps, 6);
   const card = pop(f, fps, 12);
@@ -118,7 +118,7 @@ export const Hook: React.FC<SceneProps> = ({ dur }) => {
                 lineHeight: 0.9,
                 color: C.ink,
                 letterSpacing: "-0.06em",
-                transform: `scale(${0.85 + 0.15 * pop(f, fps, 22 + count * 20.5, 10)})`,
+                transform: `scale(${0.85 + 0.15 * pop(f, fps, 14 + count * 16.5, 10)})`,
                 transformOrigin: "20% 80%",
               }}
             >
@@ -135,7 +135,7 @@ export const Hook: React.FC<SceneProps> = ({ dur }) => {
           <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16, justifyContent: "center" }}>
             {items.map((it, i) => {
               const on = count > i;
-              const op = on ? pop(f, fps, 22 + (i + 1) * 20.5, 12) : 0;
+              const op = on ? pop(f, fps, 14 + (i + 1) * 16.5, 12) : 0;
               return (
                 <div
                   key={it}
@@ -1007,7 +1007,7 @@ export const Social: React.FC<SceneProps> = ({ dur }) => {
 export const Auto: React.FC<SceneProps> = ({ dur }) => {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const SWITCH = 78;
+  const SWITCH = Math.round(AUTOPILOT_AT * FPS) - SCENES[7].from;
   const on = f >= SWITCH;
   const k = lerp(f, SWITCH, SWITCH + 10, 0, 1, Easing.inOut(Easing.cubic));
   const card = pop(f, fps, 4);

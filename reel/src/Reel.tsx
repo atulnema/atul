@@ -1,6 +1,6 @@
 import React from "react";
-import { AbsoluteFill, Sequence, useCurrentFrame, useVideoConfig } from "remotion";
-import { BRAND, CAPTIONS, OUTRO_START, SCENES } from "./content";
+import { AbsoluteFill, Audio, Sequence, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { BRAND, OUTRO_START, PHRASES, SCENES } from "./content";
 import { C, F } from "./theme";
 import { IGGlyph, lerp, pop } from "./ui";
 import { Ads, Auto, Cta, Hook, Proof, Seo, Social, Team, Web } from "./scenes";
@@ -116,7 +116,7 @@ const Dots: React.FC = () => {
   const { fps } = useVideoConfig();
   const s = currentScene(f);
   if (s.dots === 0 || f >= OUTRO_START) return null;
-  const appear = pop(f, fps, 330, 14);
+  const appear = pop(f, fps, SCENES[3].from, 14);
   return (
     <div
       style={{
@@ -158,14 +158,14 @@ const Captions: React.FC = () => {
   const t = f / fps;
   if (f >= OUTRO_START) return null;
   let idx = -1;
-  for (let i = 0; i < CAPTIONS.length; i++) if (CAPTIONS[i].t0 <= t) idx = i;
+  for (let i = 0; i < PHRASES.length; i++) if (PHRASES[i].t0 <= t) idx = i;
   if (idx < 0) return null;
-  const cap = CAPTIONS[idx];
-  const next = CAPTIONS[idx + 1];
-  if (t > cap.t1 + 0.35 && (!next || t < next.t0)) return null;
+  const cap = PHRASES[idx];
+  const next = PHRASES[idx + 1];
+  // hold through short gaps, drop during long pauses
+  const holdUntil = next && next.t0 - cap.t1 < 0.8 ? next.t0 : cap.t1 + 0.35;
+  if (t > holdUntil) return null;
 
-  const words = cap.text.split(" ");
-  const span = (cap.t1 - cap.t0) * 0.82;
   const enter = pop(f, fps, Math.round(cap.t0 * fps), 16);
 
   return (
@@ -196,10 +196,7 @@ const Captions: React.FC = () => {
           opacity: Math.min(1, enter * 2),
         }}
       >
-        {words.map((raw, i) => {
-          const key = raw.startsWith("*");
-          const w = key ? raw.slice(1) : raw;
-          const wt = cap.t0 + (i / words.length) * span;
+        {cap.words.map(({ text: w, key, t: wt }, i) => {
           const lit = t >= wt;
           const wp = lit ? pop(f, fps, Math.round(wt * fps), 12) : 0;
           return (
@@ -271,6 +268,7 @@ const Outro: React.FC = () => {
 
 export const Reel: React.FC = () => (
   <AbsoluteFill>
+    <Audio src={staticFile("voiceover.wav")} />
     <Background />
     <Watermark />
     {SCENES.map((s) => {

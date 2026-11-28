@@ -23,4 +23,10 @@ npm run render   # writes out/alphastrix-reel.mp4
 
 ## Voiceover
 
-The reel renders silent. The captions are timed for a natural Hinglish read, so you can record a voiceover straight over the MP4 in any editor, or drop an audio file into `public/` and add an `<Audio>` tag in `src/Reel.tsx`.
+`public/voiceover.wav` is the ElevenLabs narration. Scene cuts sit in its pauses, and caption timings come from its speech segments, listed in `SEGMENTS` in `src/content.ts`. If you swap in a new recording, re-measure the pauses with:
+
+```bash
+ffmpeg -i public/voiceover.wav -af silencedetect=noise=-38dB:d=0.18 -f null - 2>&1 | grep silence_
+```
+
+Then update `SEGMENTS`, the scene `from`/`dur` values and `AUTOPILOT_AT`.
